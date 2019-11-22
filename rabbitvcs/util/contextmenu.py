@@ -1278,10 +1278,13 @@ class MainContextMenu(object):
                 (MenuDebugInvalidate, None),
                 (MenuDebugAddEmblem, None)
             ]),
-            (MenuUpdate, None),
-            (MenuCommit, None),
-            (MenuPush, None),
+#           (MenuUpdate, None),
+#           (MenuCommit, None),
+#           (MenuPush, None),
             None if settings.get("HideItem", "svn") else (MenuRabbitVCSSvn, [
+                (MenuUpdate, None),
+                (MenuCommit, None),
+                (MenuPush, None),
                 (MenuCheckout, None),
                 (MenuDiffMenu, [
                     (MenuDiff, None),
@@ -1328,6 +1331,9 @@ class MainContextMenu(object):
                 (MenuAbout, None)
             ]),
             None if settings.get("HideItem", "git") else (MenuRabbitVCSGit, [
+                (MenuUpdate, None),
+                (MenuCommit, None),
+                (MenuPush, None),
                 (MenuClone, None),
                 (MenuInitializeRepository, None),
                 (MenuSeparator, None),
