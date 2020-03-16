@@ -118,7 +118,7 @@ class SVNBranch(InterfaceView):
         self.action.append(self.action.set_status, _("Running Branch/tag Command..."))
         self.action.append(self.svn.copy, src, dest, revision)
         self.action.append(self.action.set_status, _("Completed Branch/tag"))
-        if SWITCH_AFTER:
+        if self.SWITCH_AFTER:
             self.action.append(self.action.set_status, _("Running Switch Command..."))
             self.action.append(helper.save_repository_path, dest)
             self.action.append(
@@ -127,7 +127,7 @@ class SVNBranch(InterfaceView):
                 helper.quote_url(dest),
                 revision=revision
             )
-        self.action.append(self.action.set_status, _("Completed Switch"))
+            self.action.append(self.action.set_status, _("Completed Switch"))
 
         self.action.append(self.action.finish)
         self.action.schedule()
