@@ -66,7 +66,7 @@ class AltDiff(InterfaceView, GtkContextMenuCaller):
     # selections
     changes = {}
 
-    def __init__(self, paths, base_dir=None, message=None):
+    def __init__(self, paths, base_dir=None):
         """
 
         @type  paths:   list of strings
@@ -107,12 +107,6 @@ class AltDiff(InterfaceView, GtkContextMenuCaller):
         )
         self.files_table.allow_multiple()
         self.get_widget("toggle_show_unversioned").set_active(self.SHOW_UNVERSIONED)
-        if not message:
-            message = self.SETTINGS.get_multiline("general", "default_commit_message")
-        self.message = rabbitvcs.ui.widget.TextView(
-            self.get_widget("message"),
-            message
-        )
 
         self.paths = []
         for path in paths:
@@ -221,12 +215,6 @@ class AltDiff(InterfaceView, GtkContextMenuCaller):
         if event.button == 3 and event.type == Gdk.EventType.BUTTON_RELEASE:
             self.show_files_table_popup_menu(treeview, event)
 
-    def on_previous_messages_clicked(self, widget, data=None):
-        dialog = rabbitvcs.ui.dialog.PreviousMessages()
-        message = dialog.run()
-        if message is not None:
-            self.message.set_text(S(message).display())
-
     def populate_files_table(self):
         """
         First clears and then populates the files table based on the items
@@ -267,8 +255,8 @@ class AltDiff(InterfaceView, GtkContextMenuCaller):
         )
 
 class SVNAltDiff(AltDiff):
-    def __init__(self, paths, base_dir=None, message=None):
-        Commit.__init__(self, paths, base_dir, message)
+    def __init__(self, paths, base_dir=None):
+        AltDiff.__init__(self, paths, base_dir)
 
         self.get_widget("commit_to_box").show()
 
@@ -280,19 +268,13 @@ class SVNAltDiff(AltDiff):
         if len(self.paths):
             self.initialize_items()
 
-    def do_commit(self, items, recurse):
-        # pysvn.Revision
-        revision = self.vcs.svn().commit(items, self.message.get_text(), recurse=recurse)
-
-        self.action.set_status(_("Completed Commit") + " at Revision: " + str(revision.number))
-
     def on_files_table_toggle_event(self, row, col):
         # Adds path: True/False to the dict
         self.changes[row[1]] = row[col]
 
 class GitAltDiff(AltDiff):
-    def __init__(self, paths, base_dir=None, message=None):
-        AltDiff.__init__(self, paths, base_dir, message)
+    def __init__(self, paths, base_dir=None):
+        AltDiff.__init__(self, paths, base_dir)
 
         self.git = self.vcs.git(paths[0])
 
@@ -324,22 +306,22 @@ classes_map_file = {
     rabbitvcs.vcs.VCS_GIT: GitDiff
 }
 
-def altdiff_factory(paths, base_dir=None, message=None):
+def altdiff_factory(paths, base_dir=None):
     guess = rabbitvcs.vcs.guess(paths[0])
     vcs = guess["vcs"]
 
     if len(paths) == 1 and os.path.isfile(paths[0]):  
         return classes_map_file[vcs](paths[0], None, None, None, True)
     else:
-        return classes_map[guess["vcs"]](paths, base_dir, message)
+        return classes_map[guess["vcs"]](paths, base_dir)
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main, BASEDIR_OPT
     (options, paths) = main(
-        [BASEDIR_OPT, (["-m", "--message"], {"help":"add a altdiff log message"})],
+        [BASEDIR_OPT],
         usage="Usage: rabbitvcs altdiff [path1] [path2] ..."
     )
 
-    window = altdiff_factory(paths, options.base_dir, message=options.message)
+    window = altdiff_factory(paths, options.base_dir)
     window.register_gtk_quit()
     Gtk.main()
