@@ -376,6 +376,12 @@ class MenuCommit(MenuItem):
     tooltip = _("Commit modifications to the repository")
     icon = "rabbitvcs-commit"
 
+class MenuAltDiff(MenuItem):
+    identifier = "RabbitVCS::AltDiff"
+    label = _("Diff")
+    tooltip = _("Diff modifications to the repository")
+    icon = "rabbitvcs-altdiff"
+
 class MenuRabbitVCS(MenuItem):
     identifier = "RabbitVCS::RabbitVCS"
     label = _("RabbitVCS")

@@ -350,6 +350,10 @@ class ContextMenuCallbacks(object):
         proc = helper.launch_ui_window("commit", self.paths)
         self.caller.rescan_after_process_exit(proc, self.paths)
 
+    def altdiff(self, widget, data1=None, data2=None):
+        proc = helper.launch_ui_window("altdiff", self.paths)
+        self.caller.rescan_after_process_exit(proc, self.paths)
+
     def add(self, widget, data1=None, data2=None):
         proc = helper.launch_ui_window("add", self.paths)
         self.caller.rescan_after_process_exit(proc, self.paths)
@@ -670,6 +674,18 @@ class ContextMenuConditions(object):
                 not self.path_dict["is_added"])
 
     def commit(self, data=None):
+        if self.path_dict["is_svn"] or self.path_dict["is_git"] or self.path_dict["is_mercurial"]:
+            if self.path_dict["is_in_a_or_a_working_copy"]:
+                if (self.path_dict["is_added"] or
+                        self.path_dict["is_modified"] or
+                        self.path_dict["is_deleted"] or
+                        not self.path_dict["is_versioned"]):
+                    return True
+                elif (self.path_dict["is_dir"]):
+                    return True
+        return False
+
+    def altdiff(self, data=None):
         if self.path_dict["is_svn"] or self.path_dict["is_git"] or self.path_dict["is_mercurial"]:
             if self.path_dict["is_in_a_or_a_working_copy"]:
                 if (self.path_dict["is_added"] or
@@ -1338,15 +1354,16 @@ class MainContextMenu(object):
                 (MenuClone, None),
                 (MenuInitializeRepository, None),
                 (MenuSeparator, None),
-                (MenuDiffMenu, [
-                    (MenuDiff, None),
-                    (MenuDiffPrevRev, None),
-                    (MenuDiffMultiple, None),
-                    (MenuCompareTool, None),
-                    (MenuCompareToolPrevRev, None),
-                    (MenuCompareToolMultiple, None),
-                    (MenuShowChanges, None),
-                ]),
+                (MenuAltDiff, None),
+#                (MenuDiffMenu, [
+#                    (MenuDiff, None),
+#                    (MenuDiffPrevRev, None),
+#                    (MenuDiffMultiple, None),
+#                    (MenuCompareTool, None),
+#                    (MenuCompareToolPrevRev, None),
+#                    (MenuCompareToolMultiple, None),
+#                    (MenuShowChanges, None),
+#                ]),
                 (MenuShowLog, None),
                 (MenuStage, None),
                 (MenuUnstage, None),
