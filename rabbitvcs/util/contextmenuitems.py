@@ -380,7 +380,13 @@ class MenuAltDiff(MenuItem):
     identifier = "RabbitVCS::AltDiff"
     label = _("Diff")
     tooltip = _("Diff modifications to the repository")
-    icon = "rabbitvcs-altdiff"
+    icon = "rabbitvcs-diff"
+
+class MenuBlame(MenuItem):
+    identifier = "RabbitVCS::Blame"
+    label = _("Blame")
+    tooltip = _("Blame on file")
+    icon = "rabbitvcs"
 
 class MenuRabbitVCS(MenuItem):
     identifier = "RabbitVCS::RabbitVCS"

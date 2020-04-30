@@ -350,10 +350,6 @@ class ContextMenuCallbacks(object):
         proc = helper.launch_ui_window("commit", self.paths)
         self.caller.rescan_after_process_exit(proc, self.paths)
 
-    def altdiff(self, widget, data1=None, data2=None):
-        proc = helper.launch_ui_window("altdiff", self.paths)
-        self.caller.rescan_after_process_exit(proc, self.paths)
-
     def add(self, widget, data1=None, data2=None):
         proc = helper.launch_ui_window("add", self.paths)
         self.caller.rescan_after_process_exit(proc, self.paths)
@@ -368,6 +364,14 @@ class ContextMenuCallbacks(object):
 
     def revert(self, widget, data1=None, data2=None):
         proc = helper.launch_ui_window("revert", self.paths)
+        self.caller.rescan_after_process_exit(proc, self.paths)
+
+    def blame(self, widget, data1=None, data2=None):
+        proc = helper.launch_ui_window("blame", self.paths)
+        self.caller.rescan_after_process_exit(proc, self.paths)
+
+    def altdiff(self, widget, data1=None, data2=None):
+        proc = helper.launch_ui_window("altdiff", self.paths)
         self.caller.rescan_after_process_exit(proc, self.paths)
 
     def diff(self, widget, data1=None, data2=None):
@@ -682,6 +686,13 @@ class ContextMenuConditions(object):
                         not self.path_dict["is_versioned"]):
                     return True
                 elif (self.path_dict["is_dir"]):
+                    return True
+        return False
+
+    def blame(self, data=None):
+        if self.path_dict["is_git"]:
+            if self.path_dict["is_in_a_or_a_working_copy"]:
+                if (not self.path_dict["is_dir"]):
                     return True
         return False
 
@@ -1355,6 +1366,7 @@ class MainContextMenu(object):
                 (MenuInitializeRepository, None),
                 (MenuSeparator, None),
                 (MenuAltDiff, None),
+                (MenuBlame, None),
 #                (MenuDiffMenu, [
 #                    (MenuDiff, None),
 #                    (MenuDiffPrevRev, None),

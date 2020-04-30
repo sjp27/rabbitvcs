@@ -880,6 +880,23 @@ class Git(object):
 
         return self.client.show(path, revision_obj.primitive())
 
+
+    def blame(self, paths=[], line=0):
+        """
+        Checkout a series of paths from a tree or commit.  If no tree or commit
+        information is given, it will check out the files from head.  If no
+        paths are given, all files will be checked out from head.
+
+        @type   paths: list
+        @param  paths: A list of files to checkout
+
+        @type   revision: git.Revision
+        @param  revision: The revision object or branch to checkout
+
+        """
+        return self.client.blame(paths, line)
+
+
     def diff(self, path1, revision_obj1, path2=None, revision_obj2=None):
         """
         Returns the diff between the path(s)/revision(s)
