@@ -39,6 +39,7 @@ import six
 import threading
 from locale import strxfrm
 
+import os
 import os.path
 
 from rabbitvcs.util import helper
@@ -547,14 +548,25 @@ class SVNLog(Log):
         start = self.svn.revision("head")
         if self.rev_start:
             start = self.svn.revision("number", number=self.rev_start)
+        if os.environ.get('RABBITVCS_REVISION_START') is not None:
+            start = self.svn.revision("number", number=os.environ.get('RABBITVCS_REVISION_START'))
 
-        self.action.append(
-            self.svn.log,
-            self.path,
-            revision_start=start,
-            limit=self.limit,
-            discover_changed_paths=True,
-        )
+        if os.environ.get('RABBITVCS_REVISION_END') is None:
+            self.action.append(
+                self.svn.log,
+                self.path,
+                revision_start=start,
+                limit=self.limit,
+                discover_changed_paths=True,
+            )
+        else:
+            self.action.append(
+                self.svn.log,
+                self.path,
+                revision_start=start,
+                revision_end=self.svn.revision("number", number=os.environ.get('RABBITVCS_REVISION_END')),
+                discover_changed_paths=True,
+            )
         self.action.append(self.refresh)
         self.action.schedule()
 

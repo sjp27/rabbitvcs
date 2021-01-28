@@ -1796,14 +1796,16 @@ class GittyupClient(object):
             "-m",
         ]
 
-        if showtype == "all":
+        if showtype == "all" and os.environ.get('RABBITVCS_REVISION_RANGE') is None:
             cmd.append("--all")
 
         if limit:
             cmd.append("-%s" % limit)
         if skip:
             cmd.append("--skip=%s" % skip)
-        if revision:
+        if os.environ.get('RABBITVCS_REVISION_RANGE') is not None:
+            cmd.append(os.environ.get('RABBITVCS_REVISION_RANGE'))
+        elif revision:
             if showtype == "push":
                 cmd.append("%s.." % revision)
             else:
