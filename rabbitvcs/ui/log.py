@@ -759,7 +759,7 @@ class GitLog(Log):
 
         # Load tags.
         self.tagItems = []
-        for tag in self.tagAction.get_result(0):
+        for tag in self.tagAction.get_result(0) or []:
             name = tag.name
 
             # Determine the type of tag, so we know which id to use.
