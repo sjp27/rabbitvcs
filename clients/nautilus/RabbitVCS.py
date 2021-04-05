@@ -211,6 +211,9 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
 
         self.items_cache = {}
 
+        # Keep track of the emblems that we changed, to prevent double update requests
+        self.emblem_mod_cache = {}
+
     def get_columns(self):
         """
         Return all the columns we support.
@@ -358,6 +361,8 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
 
     def update_status(self, item, path, status):
         if status.summary in rabbitvcs.ui.STATUS_EMBLEMS:
+            #log.error ("Add emblem"+path)
+            self.emblem_mod_cache[path] = True
             item.add_emblem(rabbitvcs.ui.STATUS_EMBLEMS[status.summary])
 
     #~ @disable
@@ -456,7 +461,10 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
         path = self.get_local_path(item)
         self.VFSFile_table[path] = item
 
-        # log.debug("get_background_items_full() called")
+        # Early exit when we are already waiting for new info on a path
+        if path in self.items_cache and self.items_cache[path] == "in-progress":
+            log.error ("Sceduled task already pending, exit early, in progress")
+            return ()
 
         # Schedule menu conditions computation for directory contents.
         for file in os.listdir(path):
@@ -597,7 +605,13 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
             # invalidate_extension_info() - beware recursion!
             item.invalidate_extension_info()
             if status.path in self.items_cache:
-                del self.items_cache[status.path]
+                # Prevent invalidating the item_cache because the emblem changed
+                # If we don't do this, all version control items in a directory are double scanned
+                if status.path in self.emblem_mod_cache:
+                    del self.emblem_mod_cache[status.path]
+                else:
+                    #log.error ("Remove path from cache: "+status.path)
+                    del self.items_cache[status.path]
         else:
             log.debug("Path [%s] not found in file table" % status.path)
 
