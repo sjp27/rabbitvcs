@@ -48,6 +48,9 @@ class SVNBranch(InterfaceView):
     Pass a single path to the class when initializing
 
     """
+    SETTINGS = rabbitvcs.util.settings.SettingsManager()
+
+    SWITCH_AFTER = SETTINGS.get("general", "switch_after_branch")
 
     def __init__(self, path, revision=None):
         InterfaceView.__init__(self, "branch", "Branch")
@@ -77,6 +80,7 @@ class SVNBranch(InterfaceView):
         self.message = rabbitvcs.ui.widget.TextView(
             self.get_widget("message")
         )
+        self.get_widget("toggle_switch_after_branch").set_active(self.SWITCH_AFTER)
 
         self.revision_selector = rabbitvcs.ui.widget.RevisionSelector(
             self.get_widget("revision_container"),
@@ -114,6 +118,17 @@ class SVNBranch(InterfaceView):
         self.action.append(self.action.set_status, _("Running Branch/tag Command..."))
         self.action.append(self.svn.copy, src, dest, revision)
         self.action.append(self.action.set_status, _("Completed Branch/tag"))
+        if self.SWITCH_AFTER:
+            self.action.append(self.action.set_status, _("Running Switch Command..."))
+            self.action.append(helper.save_repository_path, dest)
+            self.action.append(
+                self.svn.switch,
+                self.path,
+                helper.quote_url(dest),
+                revision=revision
+            )
+            self.action.append(self.action.set_status, _("Completed Switch"))
+
         self.action.append(self.action.finish)
         self.action.schedule()
 
@@ -130,6 +145,17 @@ class SVNBranch(InterfaceView):
 
     def on_repo_browser_closed(self, new_url):
         self.from_urls.set_child_text(new_url)
+
+    def on_toggle_switch_after_branch_toggled(self, widget, *args):
+        self.SWITCH_AFTER = widget.get_active()
+
+        # Save this preference for future commits.
+        if self.SETTINGS.get("general", "switch_after_branch") != self.SWITCH_AFTER:
+            self.SETTINGS.set(
+                "general", "switch_after_branch",
+                self.SWITCH_AFTER
+            )
+            self.SETTINGS.write()
 
 classes_map = {
     rabbitvcs.vcs.VCS_SVN: SVNBranch
