@@ -4,7 +4,7 @@ TargetToolbar=true
 ToolbarLabel=Import...
 Name=Import...
 Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-import.svg
-Profiles=rabbitvcs_svn_check_mods;
+Profiles=rabbitvcs_directory_svn_import;
 
 [X-Action-Profile rabbitvcs_directory_svn_import]
 Exec=rabbitvcs import %U

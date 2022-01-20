@@ -4,7 +4,7 @@ TargetToolbar=true
 ToolbarLabel=Relocate...
 Name=Relocate...
 Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-relocate.svg
-Profiles=rabbitvcs_svn_check_mods;
+Profiles=rabbitvcs_directory_svn_relocate;
 
 [X-Action-Profile rabbitvcs_directory_svn_relocate]
 Exec=rabbitvcs relocate %U

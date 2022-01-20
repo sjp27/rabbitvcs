@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-resolve.svg
 Profiles=rabbitvcs_svn_resolve;
 
 [X-Action-Profile rabbitvcs_svn_resolve]
-Exec=rabbitvcs editconflicts %U
+Exec=rabbitvcs resolve %U
