@@ -4,7 +4,7 @@ RabbitVCS
 RabbitVCS is a set of graphical tools written to provide simple and 
 straightforward access to the version control systems you use. We currently
 support Subversion and Git on a variety of clients such as Nautilus, Thunar,
-Nemo, Caja, and on the command line.
+Nemo, Caja, PCManFM-Qt and on the command line.
 
 
 System Requirements
