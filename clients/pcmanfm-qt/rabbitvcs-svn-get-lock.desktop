@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-lock.svg
 Profiles=rabbitvcs_svn_get_lock;
 
 [X-Action-Profile rabbitvcs_svn_get_lock]
-Exec=rabbitvcs lock %U
+Exec=rabbitvcs lock %F

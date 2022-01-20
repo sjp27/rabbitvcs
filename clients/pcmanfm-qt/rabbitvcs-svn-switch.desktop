@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-switch.svg
 Profiles=rabbitvcs_svn_switch;
 
 [X-Action-Profile rabbitvcs_svn_switch]
-Exec=rabbitvcs switch %U
+Exec=rabbitvcs switch %F

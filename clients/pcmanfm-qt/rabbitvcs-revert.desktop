@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-revert.svg
 Profiles=rabbitvcs_revert;
 
 [X-Action-Profile rabbitvcs_revert]
-Exec=rabbitvcs revert %U
+Exec=rabbitvcs revert %F

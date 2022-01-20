@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-reset.svg
 Profiles=rabbitvcs_reset;
 
 [X-Action-Profile rabbitvcs_reset]
-Exec=rabbitvcs reset %U
+Exec=rabbitvcs reset %F

@@ -6,4 +6,4 @@ Name=Ignore
 Profiles=rabbitvcs_ignore;
 
 [X-Action-Profile rabbitvcs_ignore]
-Exec=rabbitvcs ignore %U
+Exec=rabbitvcs ignore %F

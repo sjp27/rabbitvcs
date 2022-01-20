@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-annotate.svg
 Profiles=rabbitvcs_file_annotate;
 
 [X-Action-Profile rabbitvcs_file_annotate]
-Exec=rabbitvcs annotate %U
+Exec=rabbitvcs annotate %F

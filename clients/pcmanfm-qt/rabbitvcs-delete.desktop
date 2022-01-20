@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-delete.svg
 Profiles=rabbitvcs_delete;
 
 [X-Action-Profile rabbitvcs_delete]
-Exec=rabbitvcs delete %U
+Exec=rabbitvcs delete %F

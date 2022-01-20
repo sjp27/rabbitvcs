@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-checkout.svg
 Profiles=rabbitvcs_checkout;
 
 [X-Action-Profile rabbitvcs_checkout]
-Exec=rabbitvcs checkout %U
+Exec=rabbitvcs checkout %F

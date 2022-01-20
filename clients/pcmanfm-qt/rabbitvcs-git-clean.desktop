@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-cleanup.svg
 Profiles=rabbitvcs_git_clean;
 
 [X-Action-Profile rabbitvcs_git_clean]
-Exec=rabbitvcs clean %U
+Exec=rabbitvcs clean %F

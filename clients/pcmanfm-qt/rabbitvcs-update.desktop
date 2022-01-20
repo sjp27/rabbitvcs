@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-update.svg
 Profiles=rabbitvcs_update;
 
 [X-Action-Profile rabbitvcs_update]
-Exec=rabbitvcs update %U
+Exec=rabbitvcs update %F

@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-branch.svg
 Profiles=rabbitvcs_tags;
 
 [X-Action-Profile rabbitvcs_tags]
-Exec=rabbitvcs tags %U
+Exec=rabbitvcs tags %F

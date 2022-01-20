@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-rename.svg
 Profiles=rabbitvcs_rename;
 
 [X-Action-Profile rabbitvcs_rename]
-Exec=rabbitvcs rename %U
+Exec=rabbitvcs rename %F

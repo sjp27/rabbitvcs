@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-import.svg
 Profiles=rabbitvcs_directory_svn_import;
 
 [X-Action-Profile rabbitvcs_directory_svn_import]
-Exec=rabbitvcs import %U
+Exec=rabbitvcs import %F

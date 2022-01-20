@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-createpatch.svg
 Profiles=rabbitvcs_create_patch;
 
 [X-Action-Profile rabbitvcs_create_patch]
-Exec=rabbitvcs createpatch %U
+Exec=rabbitvcs createpatch %F

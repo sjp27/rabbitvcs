@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/16x16/actions/rabbitvcs-push.png
 Profiles=rabbitvcs_directory_push;
 
 [X-Action-Profile rabbitvcs_directory_push]
-Exec=rabbitvcs push %U
+Exec=rabbitvcs push %F

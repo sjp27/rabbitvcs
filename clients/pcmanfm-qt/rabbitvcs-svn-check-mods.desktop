@@ -7,4 +7,4 @@ Icon=/usr/share/icons/hicolor/scalable/actions/rabbitvcs-checkmods.svg
 Profiles=rabbitvcs_svn_check_mods;
 
 [X-Action-Profile rabbitvcs_svn_check_mods]
-Exec=rabbitvcs checkmods %U
+Exec=rabbitvcs checkmods %F
