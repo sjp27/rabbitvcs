@@ -1,4 +1,12 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+from rabbitvcs.util.strings import S
+import rabbitvcs.vcs
+from rabbitvcs.ui.dialog import MessageBox
+from rabbitvcs.ui.action import SVNAction
+from rabbitvcs.ui import InterfaceView
+from gi.repository import Gtk, GObject, Gdk
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -24,19 +32,14 @@ from __future__ import absolute_import
 from rabbitvcs.util import helper
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk
 sa.restore()
 
-from rabbitvcs.ui import InterfaceView
-from rabbitvcs.ui.action import SVNAction
-from rabbitvcs.ui.dialog import MessageBox
-import rabbitvcs.vcs
-from rabbitvcs.util.strings import S
 
-from rabbitvcs import gettext
 _ = gettext.gettext
+
 
 class Relocate(InterfaceView):
     """
@@ -53,7 +56,6 @@ class Relocate(InterfaceView):
 
         InterfaceView.__init__(self, "relocate", "Relocate")
 
-
         self.path = path
         self.vcs = rabbitvcs.vcs.VCS()
         self.svn = self.vcs.svn()
@@ -63,8 +65,7 @@ class Relocate(InterfaceView):
         self.get_widget("to_url").set_text(repo)
 
         self.repositories = rabbitvcs.ui.widget.ComboBox(
-            self.get_widget("to_urls"),
-            helper.get_repository_paths()
+            self.get_widget("to_urls"), helper.get_repository_paths()
         )
 
     def on_ok_clicked(self, widget):
@@ -78,19 +79,11 @@ class Relocate(InterfaceView):
 
         self.hide()
 
-        self.action = SVNAction(
-            self.svn,
-            register_gtk_quit=self.gtk_quit_is_set()
-        )
+        self.action = SVNAction(self.svn, register_gtk_quit=self.gtk_quit_is_set())
 
         self.action.append(self.action.set_header, _("Relocate"))
         self.action.append(self.action.set_status, _("Running Relocate Command..."))
-        self.action.append(
-            self.svn.relocate,
-            from_url,
-            to_url,
-            self.path
-        )
+        self.action.append(self.svn.relocate, from_url, to_url, self.path)
         self.action.append(self.action.set_status, _("Completed Relocate"))
         self.action.append(self.action.finish)
         self.action.schedule()
@@ -98,6 +91,7 @@ class Relocate(InterfaceView):
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main
+
     (options, paths) = main(usage="Usage: rabbitvcs relocate [path]")
 
     window = Relocate(paths[0])

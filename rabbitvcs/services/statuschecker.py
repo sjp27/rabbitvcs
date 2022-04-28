@@ -20,31 +20,32 @@ Very simple status checking class. Useful when you can't get any of the others
 to work, or you need to prototype things.
 """
 from __future__ import absolute_import
+from rabbitvcs.util.log import Log
 
 import rabbitvcs.vcs
 import rabbitvcs.vcs.status
 
 from rabbitvcs import gettext
+
 _ = gettext.gettext
 
-from rabbitvcs.util.log import Log
 log = Log("rabbitvcs.services.statuschecker")
 
+
 class StatusChecker(object):
-    """ A class for performing status checks. """
+    """A class for performing status checks."""
 
     # All subclasses should override this! This is to be displayed in the
     # settings dialog
     CHECKER_NAME = _("Simple status checker")
 
     def __init__(self):
-        """ Initialises status checker. Obviously. """
+        """Initialises status checker. Obviously."""
         self.vcs_client = rabbitvcs.vcs.create_vcs_instance()
         self.conditions_dict_cache = {}
 
     def check_status(self, path, recurse, summary, invalidate):
-        """ Performs a status check, blocking until the check is done.
-        """
+        """Performs a status check, blocking until the check is done."""
         path_status = self.vcs_client.status(path, summary, invalidate)
         return path_status
 
@@ -58,7 +59,7 @@ class StatusChecker(object):
         return None
 
     def get_memory_usage(self):
-        """ Returns any additional memory of any subprocesses used by this
+        """Returns any additional memory of any subprocesses used by this
         checker. In other words, DO NOT return the memory usage of THIS process!
         """
         return 0

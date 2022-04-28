@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -28,6 +29,7 @@ from locale import getdefaultlocale
 # Hack to make RabbitVCS win in the battle against TortoiseHg
 try:
     import mercurial.demandimport
+
     mercurial.demandimport.enable = lambda: None
 except Exception as e:
     pass
@@ -42,7 +44,7 @@ if not os.path.exists(LOCALE_DIR):
 WEBSITE = "http://www.rabbitvcs.org/"
 
 langs = []
-language = os.environ.get('LANGUAGE', None)
+language = os.environ.get("LANGUAGE", None)
 if language:
     langs += language.split(":")
 if getdefaultlocale()[0] != None:
@@ -52,14 +54,15 @@ _gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
 _gettext.textdomain(APP_NAME)
 current_translation = None
 
+
 class gettext(object):
     @staticmethod
     def set_language(langs):
         global current_translation
-        current_translation = _gettext.translation(APP_NAME,
-                                                   LOCALE_DIR,
-                                                   languages = langs,
-                                                   fallback = True)
+        current_translation = _gettext.translation(
+            APP_NAME, LOCALE_DIR, languages=langs, fallback=True
+        )
+
     @staticmethod
     def gettext(message):
         if not current_translation:
@@ -70,7 +73,9 @@ class gettext(object):
     def ngettext(msgid1, msgid2, n):
         return gettext.gettext(msgid1 if n == 1 else msgid2)
 
+
 gettext.set_language(langs)
+
 
 def package_name():
     """
@@ -87,7 +92,7 @@ def package_version():
     extensions.
 
     """
-    app_version = version.split('-')[0]
+    app_version = version.split("-")[0]
     # TODO: sanity-check app_version: make sure it's just digits and dots
     return app_version
 
@@ -99,6 +104,7 @@ def package_identifier():
     """
     return "%s-%s" % (package_name(), package_version())
 
+
 def package_prefix():
     """
     Return the prefix of the local RabbitVCS installation
@@ -107,9 +113,11 @@ def package_prefix():
 
     try:
         from rabbitvcs.buildinfo import rabbitvcs_prefix
+
         return rabbitvcs_prefix
     except ImportError as e:
         return ""
+
 
 def get_icon_path():
     """
@@ -119,6 +127,9 @@ def get_icon_path():
 
     try:
         from rabbitvcs.buildinfo import icon_path
+
         return icon_path
     except ImportError as e:
-        return "%s/data/icons/hicolor" % os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+        return "%s/data/icons/hicolor" % os.path.dirname(
+            os.path.dirname(os.path.realpath(__file__))
+        )

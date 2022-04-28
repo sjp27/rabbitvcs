@@ -25,20 +25,19 @@ Unit tests for the top-level rabbitvcs package.
 
 """
 from __future__ import absolute_import
+from rabbitvcs.util.extensions.nautilus import RabbitVCS
+import rabbitvcs
+import pysvn
+from . import nautilus
+import traceback
+from unittest import TestCase, main
 
 # make sure the current working copy is in sys.path before anything else
 from os.path import abspath, dirname, join, normpath
 import sys
-toplevel = normpath(join(dirname(abspath(__file__)), '..', '..'))
+
+toplevel = normpath(join(dirname(abspath(__file__)), "..", ".."))
 sys.path.insert(0, toplevel)
-
-from unittest import TestCase, main
-import traceback
-
-from . import nautilus
-import pysvn
-import rabbitvcs
-from rabbitvcs.util.extensions.nautilus import RabbitVCS
 
 
 class RabbitVCSTest(TestCase):
@@ -46,6 +45,7 @@ class RabbitVCSTest(TestCase):
     Main RabbitVCS tests.
 
     """
+
     def test_package_name(self):
         """Make sure the package name is reported properly."""
         result = rabbitvcs.package_name()
@@ -55,9 +55,11 @@ class RabbitVCSTest(TestCase):
         """Make sure the package version is reported properly."""
         result = rabbitvcs.package_version()
         for character in result:
-            if not (character.isdigit() or character == '.'):
-                self.fail("Not all characters in package version "
-                          "'%s' were digits or dots." % result)
+            if not (character.isdigit() or character == "."):
+                self.fail(
+                    "Not all characters in package version "
+                    "'%s' were digits or dots." % result
+                )
 
     def test_package_identifier(self):
         """Make sure the package identifier is reported properly."""
@@ -71,6 +73,7 @@ class FakeVersion(object):
     Fake revision info for FakeInfo, below.
 
     """
+
     def __init__(self, number):
         self.number = number
 
@@ -80,13 +83,15 @@ class FakeInfo(object):
     Fake pysvn.Client.info() response.
 
     """
+
     def __init__(self):
-        self.data = {'text_status': pysvn.wc_status_kind.none,
-                     'commit_revision': FakeVersion(1234),
-                     'commit_author': None,
-                     'commit_time': 0.0,
-                     'url': None,
-                     }
+        self.data = {
+            "text_status": pysvn.wc_status_kind.none,
+            "commit_revision": FakeVersion(1234),
+            "commit_author": None,
+            "commit_time": 0.0,
+            "url": None,
+        }
 
 
 class FakeClient(object):
@@ -94,6 +99,7 @@ class FakeClient(object):
     Fake pysvn.Client that can have its behavior controlled.
 
     """
+
     instance_count = 0
     send_empty_info = True
 
@@ -117,6 +123,7 @@ class FakeLog(object):
     within unit tests.
 
     """
+
     def __init__(self, prefix):
         self.prefix = prefix
         self.messages = []
@@ -137,6 +144,7 @@ class RabbitVCSPySvnTest(TestCase):
     fiddle with pysvn stuff for the tests to work.
 
     """
+
     def setUp(self):
         self.oldClient = pysvn.Client
         pysvn.Client = FakeClient
@@ -163,9 +171,10 @@ class RabbitVCSPySvnTest(TestCase):
         self.assertEqual(FakeClient.instance_count, 2)
         self.assertEqual(len(self.logger.messages), 1)
         last_message = self.logger.messages[-1]
-        self.assertEqual(str(last_message[1]),
-                         "The path 'awesomepath' does not "
-                         "appear to be under source control.")
+        self.assertEqual(
+            str(last_message[1]),
+            "The path 'awesomepath' does not " "appear to be under source control.",
+        )
 
     def test_update_columns_correct_info(self):
         """
@@ -179,7 +188,7 @@ class RabbitVCSPySvnTest(TestCase):
         self.nsvn.update_columns(item, path)
         self.assertEqual(FakeClient.instance_count, 2)
         if len(self.logger.messages) > 0:
-            for e,m,t in self.logger.messages:
+            for e, m, t in self.logger.messages:
                 traceback.print_exception(e, m, t)
             self.fail()
 

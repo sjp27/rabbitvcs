@@ -1,4 +1,13 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+from rabbitvcs.util.log import Log
+from rabbitvcs.util.strings import S
+import rabbitvcs.vcs
+import rabbitvcs.ui.dialog
+import rabbitvcs.ui.widget
+from rabbitvcs.ui import InterfaceView
+from gi.repository import Gtk, GObject, Gdk
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -24,22 +33,16 @@ from __future__ import absolute_import
 from rabbitvcs.util import helper
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk
 sa.restore()
 
-from rabbitvcs.ui import InterfaceView
-import rabbitvcs.ui.widget
-import rabbitvcs.ui.dialog
-import rabbitvcs.vcs
-from rabbitvcs.util.strings import S
-from rabbitvcs.util.log import Log
 
 log = Log("rabbitvcs.ui.properties")
 
-from rabbitvcs import gettext
 _ = gettext.gettext
+
 
 class PropertiesBase(InterfaceView):
     """
@@ -57,16 +60,14 @@ class PropertiesBase(InterfaceView):
         self.path = path
         self.delete_stack = []
 
-        self.get_widget("Properties").set_title(
-            _("Properties - %s") % path
-        )
+        self.get_widget("Properties").set_title(_("Properties - %s") % path)
 
         self.get_widget("path").set_text(S(path).display())
 
         self.table = rabbitvcs.ui.widget.Table(
             self.get_widget("table"),
             [GObject.TYPE_BOOLEAN, GObject.TYPE_STRING, GObject.TYPE_STRING],
-            [rabbitvcs.ui.widget.TOGGLE_BUTTON, _("Name"), _("Value")]
+            [rabbitvcs.ui.widget.TOGGLE_BUTTON, _("Name"), _("Value")],
         )
         self.table.allow_multiple()
 
@@ -76,20 +77,19 @@ class PropertiesBase(InterfaceView):
     # UI Signal Callbacks
     #
 
-
     def on_ok_clicked(self, widget):
         self.save()
 
     def on_new_clicked(self, widget):
         dialog = rabbitvcs.ui.dialog.Property()
-        name,value,recurse = dialog.run()
+        name, value, recurse = dialog.run()
         if name:
-            self.table.append([recurse,name,value])
+            self.table.append([recurse, name, value])
 
     def on_edit_clicked(self, widget):
-        (recurse,name,value) = self.get_selected_name_value()
+        (recurse, name, value) = self.get_selected_name_value()
         dialog = rabbitvcs.ui.dialog.Property(name, value)
-        name,value,recurse = dialog.run()
+        name, value, recurse = dialog.run()
         if name:
             self.set_selected_name_value(name, value, recurse)
 
@@ -99,7 +99,7 @@ class PropertiesBase(InterfaceView):
 
         for i in self.selected_rows:
             row = self.table.get_row(i)
-            self.delete_stack.append([row[0],row[1]])
+            self.delete_stack.append([row[0], row[1]])
 
         self.table.remove_multiple(self.selected_rows)
 
@@ -135,13 +135,14 @@ class PropertiesBase(InterfaceView):
     #
 
     def set_selected_name_value(self, name, value, recurse):
-        self.table.set_row(self.selected_rows[0], [recurse,name,value])
+        self.table.set_row(self.selected_rows[0], [recurse, name, value])
 
     def get_selected_name_value(self):
         returner = None
         if self.selected_rows is not None:
             returner = self.table.get_row(self.selected_rows[0])
         return returner
+
 
 class SVNProperties(PropertiesBase):
     def __init__(self, path):
@@ -159,8 +160,8 @@ class SVNProperties(PropertiesBase):
             self.proplist = []
 
         if self.proplist:
-            for key,val in list(self.proplist.items()):
-                self.table.append([False, key,val.rstrip()])
+            for key, val in list(self.proplist.items()):
+                self.table.append([False, key, val.rstrip()])
 
     def save(self):
         delete_recurse = self.get_widget("delete_recurse").get_active()
@@ -170,19 +171,23 @@ class SVNProperties(PropertiesBase):
 
         failure = False
         for row in self.table.get_items():
-            if (not self.svn.propset(self.path, row[1], row[2],
-                             overwrite=True, recurse=row[0])):
+            if not self.svn.propset(
+                self.path, row[1], row[2], overwrite=True, recurse=row[0]
+            ):
                 failure = True
                 break
 
         if failure:
-            rabbitvcs.ui.dialog.MessageBox(_("There was a problem saving your properties."))
+            rabbitvcs.ui.dialog.MessageBox(
+                _("There was a problem saving your properties.")
+            )
 
         self.close()
 
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main
+
     (options, paths) = main(usage="Usage: rabbitvcs properties [url_or_path]")
 
     window = SVNProperties(paths[0])

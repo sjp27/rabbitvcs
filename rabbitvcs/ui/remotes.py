@@ -1,5 +1,15 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+import rabbitvcs.vcs
+from rabbitvcs.ui.dialog import DeleteConfirmation
+import rabbitvcs.ui.widget
+from rabbitvcs.ui.action import GitAction
+from rabbitvcs.ui import InterfaceView
+import time
+from datetime import datetime
+from gi.repository import Gtk, GObject, Gdk, Pango
 from __future__ import print_function
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -27,25 +37,17 @@ import os
 from rabbitvcs.util import helper
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk, Pango
 sa.restore()
 
-from datetime import datetime
-import time
 
-from rabbitvcs.ui import InterfaceView
-from rabbitvcs.ui.action import GitAction
-import rabbitvcs.ui.widget
-from rabbitvcs.ui.dialog import DeleteConfirmation
-import rabbitvcs.vcs
-
-from rabbitvcs import gettext
 _ = gettext.gettext
 
 STATE_ADD = 0
 STATE_EDIT = 1
+
 
 class GitRemotes(InterfaceView):
     """
@@ -70,15 +72,11 @@ class GitRemotes(InterfaceView):
             [GObject.TYPE_STRING, GObject.TYPE_STRING],
             [_("Name"), _("Host")],
             callbacks={
-                "mouse-event":   self.on_treeview_mouse_event,
-                "key-event":     self.on_treeview_key_event,
-                "cell-edited":   self.on_treeview_cell_edited_event
+                "mouse-event": self.on_treeview_mouse_event,
+                "key-event": self.on_treeview_key_event,
+                "cell-edited": self.on_treeview_cell_edited_event,
             },
-            flags={
-                "sortable": False,
-                "sort_on": 0,
-                "editable": [0,1]
-            }
+            flags={"sortable": False, "sort_on": 0, "editable": [0, 1]},
         )
 
         self.load()
@@ -123,7 +121,9 @@ class GitRemotes(InterfaceView):
     def on_delete_clicked(self, widget):
         selected = self.items_treeview.get_selected_row_items(0)
 
-        confirm = rabbitvcs.ui.dialog.Confirmation(_("Are you sure you want to delete %s?" % ", ".join(selected)))
+        confirm = rabbitvcs.ui.dialog.Confirmation(
+            _("Are you sure you want to delete %s?" % ", ".join(selected))
+        )
         result = confirm.run()
 
         if result == Gtk.ResponseType.OK or result == True:
@@ -163,6 +163,7 @@ class GitRemotes(InterfaceView):
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main
+
     (options, paths) = main(usage="Usage: rabbitvcs branch-manager path")
 
     window = GitRemotes(paths[0])

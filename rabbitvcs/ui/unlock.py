@@ -1,4 +1,15 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+from rabbitvcs.util.log import Log
+from rabbitvcs.util.strings import S
+import rabbitvcs.ui.action
+import rabbitvcs.ui.dialog
+import rabbitvcs.ui.widget
+from rabbitvcs.ui.action import SVNAction
+from rabbitvcs.ui.add import Add
+from rabbitvcs.ui import InterfaceView, InterfaceNonView
+from gi.repository import Gtk, GObject, Gdk
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -26,24 +37,16 @@ import six.moves._thread
 from rabbitvcs.util import helper
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk
 sa.restore()
 
-from rabbitvcs.ui import InterfaceView, InterfaceNonView
-from rabbitvcs.ui.add import Add
-from rabbitvcs.ui.action import SVNAction
-import rabbitvcs.ui.widget
-import rabbitvcs.ui.dialog
-import rabbitvcs.ui.action
-from rabbitvcs.util.strings import S
-from rabbitvcs.util.log import Log
 
 log = Log("rabbitvcs.ui.unlock")
 
-from rabbitvcs import gettext
 _ = gettext.gettext
+
 
 class SVNUnlock(Add):
     def setup(self, window, columns):
@@ -78,18 +81,18 @@ class SVNUnlock(Add):
         found = 0
         for item in self.items:
             # FIXME: ...
-            if item.simple_content_status() in (rabbitvcs.vcs.status.status_unversioned, rabbitvcs.vcs.status.status_ignored):
+            if item.simple_content_status() in (
+                rabbitvcs.vcs.status.status_unversioned,
+                rabbitvcs.vcs.status.status_ignored,
+            ):
                 continue
 
             if not self.svn.is_locked(item.path):
                 continue
 
-            self.files_table.append([
-                True,
-                S(item.path),
-                item.path,
-                helper.get_file_extension(item.path)
-            ])
+            self.files_table.append(
+                [True, S(item.path), item.path, helper.get_file_extension(item.path)]
+            )
             found += 1
 
         self.get_widget("status").set_text(_("Found %d item(s)") % found)
@@ -106,8 +109,7 @@ class SVNUnlock(Add):
         self.hide()
 
         self.action = rabbitvcs.ui.action.SVNAction(
-            self.svn,
-            register_gtk_quit=self.gtk_quit_is_set()
+            self.svn, register_gtk_quit=self.gtk_quit_is_set()
         )
 
         self.action.append(self.action.set_header, _("Unlock"))
@@ -117,6 +119,7 @@ class SVNUnlock(Add):
         self.action.append(self.action.set_status, _("Completed Unlock"))
         self.action.append(self.action.finish)
         self.action.schedule()
+
 
 class SVNUnlockQuiet(object):
     """
@@ -132,13 +135,11 @@ class SVNUnlockQuiet(object):
         for path in self.paths:
             self.svn.unlock(path, force=True)
 
-classes_map = {
-    rabbitvcs.vcs.VCS_SVN: SVNUnlock
-}
 
-quiet_classes_map = {
-    rabbitvcs.vcs.VCS_SVN: SVNUnlockQuiet
-}
+classes_map = {rabbitvcs.vcs.VCS_SVN: SVNUnlock}
+
+quiet_classes_map = {rabbitvcs.vcs.VCS_SVN: SVNUnlockQuiet}
+
 
 def unlock_factory(cmap, paths, base_dir=None):
     guess = rabbitvcs.vcs.guess(paths[0])
@@ -147,9 +148,9 @@ def unlock_factory(cmap, paths, base_dir=None):
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main, BASEDIR_OPT, QUIET_OPT
+
     (options, paths) = main(
-        [BASEDIR_OPT, QUIET_OPT],
-        usage="Usage: rabbitvcs unlock [path1] [path2] ..."
+        [BASEDIR_OPT, QUIET_OPT], usage="Usage: rabbitvcs unlock [path1] [path2] ..."
     )
 
     if options.quiet:

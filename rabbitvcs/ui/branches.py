@@ -1,4 +1,17 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+from xml.sax import saxutils
+import rabbitvcs.vcs
+from rabbitvcs.util.strings import S
+from rabbitvcs.ui.dialog import DeleteConfirmation
+import rabbitvcs.ui.widget
+from rabbitvcs.ui.log import log_dialog_factory
+from rabbitvcs.ui.action import GitAction
+from rabbitvcs.ui import InterfaceView
+import time
+from datetime import datetime
+from gi.repository import Gtk, GObject, Gdk, Pango
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -26,29 +39,17 @@ import os
 from rabbitvcs.util import helper
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk, Pango
 sa.restore()
 
-from datetime import datetime
-import time
 
-from rabbitvcs.ui import InterfaceView
-from rabbitvcs.ui.action import GitAction
-from rabbitvcs.ui.log import log_dialog_factory
-import rabbitvcs.ui.widget
-from rabbitvcs.ui.dialog import DeleteConfirmation
-from rabbitvcs.util.strings import S
-import rabbitvcs.vcs
-
-from xml.sax import saxutils
-
-from rabbitvcs import gettext
 _ = gettext.gettext
 
 STATE_ADD = 0
 STATE_EDIT = 1
+
 
 class GitBranchManager(InterfaceView):
     """
@@ -78,9 +79,9 @@ class GitBranchManager(InterfaceView):
             [rabbitvcs.ui.widget.TYPE_MARKUP],
             [_("Branch")],
             callbacks={
-                "mouse-event":   self.on_treeview_mouse_event,
-                "key-event":     self.on_treeview_key_event
-            }
+                "mouse-event": self.on_treeview_mouse_event,
+                "key-event": self.on_treeview_key_event,
+            },
         )
         self.initialize_detail()
         self.load()
@@ -104,8 +105,8 @@ class GitBranchManager(InterfaceView):
         row = 0
 
         # Set up the Branch line
-        label = Gtk.Label(label = _("Name:"))
-        label.set_properties(xalign=0, yalign=.5)
+        label = Gtk.Label(label=_("Name:"))
+        label.set_properties(xalign=0, yalign=0.5)
         self.branch_entry = Gtk.Entry()
         self.branch_entry.set_hexpand(True)
         self.detail_grid.attach(label, 0, row, 1, 1)
@@ -114,8 +115,8 @@ class GitBranchManager(InterfaceView):
         row = row + 1
 
         # Set up the Commit-sha line
-        label = Gtk.Label(label = _("Start Point:"))
-        label.set_properties(xalign=0, yalign=.5)
+        label = Gtk.Label(label=_("Start Point:"))
+        label.set_properties(xalign=0, yalign=0.5)
         self.start_point_entry = Gtk.Entry()
         self.start_point_entry.set_size_request(300, -1)
         self.start_point_entry.set_hexpand(True)
@@ -131,13 +132,13 @@ class GitBranchManager(InterfaceView):
         row = row + 1
 
         # Set up the Track line
-        self.track_checkbox = Gtk.CheckButton(label = _("Keep old branch's history"))
+        self.track_checkbox = Gtk.CheckButton(label=_("Keep old branch's history"))
         self.detail_grid.attach(self.track_checkbox, 1, row, 2, 1)
         track_row = row
         row = row + 1
 
         # Set up the checkout line
-        self.checkout_checkbox = Gtk.CheckButton(label = _("Set as active branch"))
+        self.checkout_checkbox = Gtk.CheckButton(label=_("Set as active branch"))
         self.detail_grid.attach(self.checkout_checkbox, 1, row, 2, 1)
         checkout_row = row
         row = row + 1
@@ -151,9 +152,9 @@ class GitBranchManager(InterfaceView):
         row = row + 1
 
         # Set up the Revision line
-        label = Gtk.Label(label = _("Revision:"))
-        label.set_properties(xalign=0,yalign=0)
-        self.revision_label = Gtk.Label(label = "")
+        label = Gtk.Label(label=_("Revision:"))
+        label.set_properties(xalign=0, yalign=0)
+        self.revision_label = Gtk.Label(label="")
         self.revision_label.set_properties(xalign=0, selectable=True)
         self.revision_label.set_line_wrap(True)
         self.revision_label.set_hexpand(True)
@@ -163,9 +164,9 @@ class GitBranchManager(InterfaceView):
         row = row + 1
 
         # Set up the Log Message line
-        label = Gtk.Label(label = _("Message:"))
+        label = Gtk.Label(label=_("Message:"))
         label.set_properties(xalign=0, yalign=0)
-        self.message_label = Gtk.Label(label = "")
+        self.message_label = Gtk.Label(label="")
         self.message_label.set_properties(xalign=0, yalign=0, selectable=True)
         self.message_label.set_line_wrap(True)
         self.message_label.set_hexpand(True)
@@ -174,11 +175,21 @@ class GitBranchManager(InterfaceView):
         message_row = row
         row = row + 1
 
-        self.add_rows = [branch_name_row, track_row, save_row, start_point_row,
-            checkout_row]
+        self.add_rows = [
+            branch_name_row,
+            track_row,
+            save_row,
+            start_point_row,
+            checkout_row,
+        ]
 
-        self.view_rows = [branch_name_row, revision_row, message_row, save_row,
-             checkout_row]
+        self.view_rows = [
+            branch_name_row,
+            revision_row,
+            message_row,
+            save_row,
+            checkout_row,
+        ]
 
         self.detail_grid.show()
         self.detail_container.add(self.detail_grid)
@@ -201,9 +212,13 @@ class GitBranchManager(InterfaceView):
 
         selected = []
         for branch in items:
-            selected.append(saxutils.unescape(branch).replace("<b>", "").replace("</b>", ""))
+            selected.append(
+                saxutils.unescape(branch).replace("<b>", "").replace("</b>", "")
+            )
 
-        confirm = rabbitvcs.ui.dialog.Confirmation(_("Are you sure you want to delete %s?" % ", ".join(selected)))
+        confirm = rabbitvcs.ui.dialog.Confirmation(
+            _("Are you sure you want to delete %s?" % ", ".join(selected))
+        )
         result = confirm.run()
 
         if result == Gtk.ResponseType.OK or result == True:
@@ -295,7 +310,9 @@ class GitBranchManager(InterfaceView):
         if self.selected_branch:
             self.branch_entry.set_text(S(self.selected_branch.name).display())
             self.revision_label.set_text(S(self.selected_branch.revision).display())
-            self.message_label.set_text(S(self.selected_branch.message.rstrip("\n")).display())
+            self.message_label.set_text(
+                S(self.selected_branch.message.rstrip("\n")).display()
+            )
             if self.selected_branch.tracking:
                 self.checkout_checkbox.set_active(True)
                 self.checkout_checkbox.set_sensitive(False)
@@ -307,10 +324,7 @@ class GitBranchManager(InterfaceView):
         self.get_widget("detail_label").set_markup(_("<b>Branch Detail</b>"))
 
     def on_log_dialog_button_clicked(self, widget):
-        log_dialog_factory(
-            self.path,
-            ok_callback=self.on_log_dialog_closed
-        )
+        log_dialog_factory(self.path, ok_callback=self.on_log_dialog_closed)
 
     def on_log_dialog_closed(self, data):
         if data:
@@ -319,9 +333,10 @@ class GitBranchManager(InterfaceView):
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main, REVISION_OPT, VCS_OPT
+
     (options, paths) = main(
         [REVISION_OPT, VCS_OPT],
-        usage="Usage: rabbitvcs branch-manager path [-r revision]"
+        usage="Usage: rabbitvcs branch-manager path [-r revision]",
     )
 
     window = GitBranchManager(paths[0], revision=options.revision)

@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 #
 # This is a Gedit plugin to allow for RabbitVCS integration in the Gedit
 # text editor.
@@ -28,9 +29,14 @@ from gi.repository import Gtk as gtk
 
 import rabbitvcs.util.helper
 from rabbitvcs.vcs import create_vcs_instance
-from rabbitvcs.util.contextmenu import GtkFilesContextMenuConditions, \
-    GtkFilesContextMenuCallbacks, MainContextMenu, MainContextMenuCallbacks, \
-    MenuBuilder, GtkContextMenuCaller
+from rabbitvcs.util.contextmenu import (
+    GtkFilesContextMenuConditions,
+    GtkFilesContextMenuCallbacks,
+    MainContextMenu,
+    MainContextMenuCallbacks,
+    MenuBuilder,
+    GtkContextMenuCaller,
+)
 from rabbitvcs.util.contextmenuitems import *
 
 # Menu item example, insert a new item in the Tools menu
@@ -140,10 +146,12 @@ ui_str = """<ui>
   </menubar>
 </ui>
 """
+
+
 class RabbitVCSWindowHelper(GtkContextMenuCaller):
 
     _menu_paths = [
-#        "/MenuBar/RabbitVCSMenu",
+        #        "/MenuBar/RabbitVCSMenu",
         "/MenuBar/ExtraMenu_1/RabbitVCSMenu/RabbitVCS::RabbitVCS_Svn",
         "/MenuBar/ExtraMenu_1/RabbitVCSMenu/RabbitVCS::RabbitVCS_Svn/RabbitVCS::Commit",
         "/MenuBar/ExtraMenu_1/RabbitVCSMenu/RabbitVCS::RabbitVCS_Svn/RabbitVCS::Update",
@@ -218,7 +226,7 @@ class RabbitVCSWindowHelper(GtkContextMenuCaller):
         "/MenuBar/ExtraMenu_1/RabbitVCSMenu/RabbitVCS::RabbitVCS_Git/RabbitVCS::Apply_Patch",
         "/MenuBar/ExtraMenu_1/RabbitVCSMenu/RabbitVCS::RabbitVCS_Git/RabbitVCS::Create_Patch",
         "/MenuBar/ExtraMenu_1/RabbitVCSMenu/RabbitVCS::Settings",
-        "/MenuBar/ExtraMenu_1/RabbitVCSMenu/RabbitVCS::About"
+        "/MenuBar/ExtraMenu_1/RabbitVCSMenu/RabbitVCS::About",
     ]
 
     _default_base_dir = os.path.expanduser("~")
@@ -249,12 +257,19 @@ class RabbitVCSWindowHelper(GtkContextMenuCaller):
         # Get the GtkUIManager
         manager = self._window.get_ui_manager()
 
-        self._menubar_menu = GeditMenu(self, self.vcs_client, self.base_dir, [self._get_document_path()])
-        self._menu_action = gtk.Action( name="RabbitVCSMenu", label="RabbitVCS", tooltip="Excellent Version Control for Linux", stock_id=None )
+        self._menubar_menu = GeditMenu(
+            self, self.vcs_client, self.base_dir, [self._get_document_path()]
+        )
+        self._menu_action = gtk.Action(
+            name="RabbitVCSMenu",
+            label="RabbitVCS",
+            tooltip="Excellent Version Control for Linux",
+            stock_id=None,
+        )
 
         self._action_group = gtk.ActionGroup("RabbitVCSActions")
         self._action_group = self._menubar_menu.get_action_group(self._action_group)
-        self._action_group.add_action( self._menu_action )
+        self._action_group.add_action(self._menu_action)
 
         # Insert the action group
         manager.insert_action_group(self._action_group, 0)
@@ -298,7 +313,9 @@ class RabbitVCSWindowHelper(GtkContextMenuCaller):
         menu.append(separator)
         separator.show()
 
-        context_menu = GeditMainContextMenu(self, self.vcs_client, self.base_dir, [self._get_document_path()]).get_menu()
+        context_menu = GeditMainContextMenu(
+            self, self.vcs_client, self.base_dir, [self._get_document_path()]
+        ).get_menu()
         for context_menu_item in context_menu:
             menu.append(context_menu_item)
 
@@ -359,8 +376,8 @@ class RabbitVCSWindowHelper(GtkContextMenuCaller):
             self._instances[self.window] = RabbitVCSWindowHelper(self, self.window)
 
             handler_ids = []
-            for signal in ('tab-added', 'tab-removed'):
-                method = getattr(self, 'on_window_' + signal.replace('-', '_'))
+            for signal in ("tab-added", "tab-removed"):
+                method = getattr(self, "on_window_" + signal.replace("-", "_"))
                 handler_ids.append(self.window.connect(signal, method))
 
             self.window.set_data(self.id_name, handler_ids)
@@ -394,17 +411,22 @@ class RabbitVCSWindowHelper(GtkContextMenuCaller):
 
         def on_window_tab_removed(self, window, tab):
             if window in self._instances:
-                self._instances[self.window].disconnect_view(tab.get_view(), self.id_name)
+                self._instances[self.window].disconnect_view(
+                    tab.get_view(), self.id_name
+                )
+
 
 class MenuIgnoreByFilename(MenuItem):
     identifier = "RabbitVCS::Ignore_By_Filename"
     label = _("Ignore by File Name")
     tooltip = _("Ignore item by filename")
 
+
 class MenuIgnoreByFileExtension(MenuItem):
     identifier = "RabbitVCS::Ignore_By_File_Extension"
     label = _("Ignore by File Extension")
     tooltip = _("Ignore item by extension")
+
 
 class GeditMenuBuilder(object):
     """
@@ -457,7 +479,9 @@ class GeditMenuBuilder(object):
             item = item_class(conditions, callbacks)
 
             default_name = MenuItem.make_default_name(item.identifier)
-            action = RabbitVCSAction(item.identifier, item.label, item.tooltip, item.icon)
+            action = RabbitVCSAction(
+                item.identifier, item.label, item.tooltip, item.icon
+            )
 
             if item.icon and hasattr(action, "set_icon_name"):
                 action.set_icon_name(item.icon)
@@ -485,6 +509,7 @@ class GeditMenuBuilder(object):
                 function = attr
 
         return function
+
 
 class GeditMenu(object):
     def __init__(self, caller, vcs_client, base_dir, paths):
@@ -516,10 +541,7 @@ class GeditMenu(object):
         self.conditions = GtkFilesContextMenuConditions(self.vcs_client, self.paths)
 
         self.callbacks = GtkFilesContextMenuCallbacks(
-            self.caller,
-            self.base_dir,
-            self.vcs_client,
-            self.paths
+            self.caller, self.base_dir, self.vcs_client, self.paths
         )
 
         self.structure = [
@@ -576,7 +598,7 @@ class GeditMenu(object):
             MenuSettings,
             MenuAbout,
             MenuIgnoreByFilename,
-            MenuIgnoreByFileExtension
+            MenuIgnoreByFileExtension,
         ]
 
     def set_paths(self, paths):
@@ -590,7 +612,9 @@ class GeditMenu(object):
         self.conditions.base_dir = base_dir
 
     def get_action_group(self, action_group):
-        return GeditMenuBuilder(self.structure, self.conditions, self.callbacks, action_group).action_group
+        return GeditMenuBuilder(
+            self.structure, self.conditions, self.callbacks, action_group
+        ).action_group
 
     def update_conditions(self, paths):
         self.conditions.generate_statuses(paths)
@@ -598,6 +622,7 @@ class GeditMenu(object):
 
     def update_action(self, action):
         action.set_property("visible", action.get_data("item").show())
+
 
 class GeditContextMenu(MenuBuilder):
     """
@@ -618,9 +643,11 @@ class GeditContextMenu(MenuBuilder):
     def top_level_menu(self, items):
         return items
 
+
 class GeditMainContextMenu(MainContextMenu):
-    def __init__(self, caller, vcs_client, base_dir, paths=[],
-            conditions=None, callbacks=None):
+    def __init__(
+        self, caller, vcs_client, base_dir, paths=[], conditions=None, callbacks=None
+    ):
         """
         @param  caller: The calling object
         @type   caller: RabbitVCS extension
@@ -653,10 +680,7 @@ class GeditMainContextMenu(MainContextMenu):
         self.callbacks = callbacks
         if self.callbacks is None:
             self.callbacks = MainContextMenuCallbacks(
-                self.caller,
-                self.base_dir,
-                self.vcs_client,
-                paths
+                self.caller, self.base_dir, self.vcs_client, paths
             )
 
         ignore_items = get_ignore_list_items(paths)
@@ -668,93 +692,105 @@ class GeditMainContextMenu(MainContextMenu):
             (MenuUpdate, None),
             (MenuCommit, None),
             (MenuPush, None),
-            (MenuRabbitVCSSvn, [
-                (MenuCheckout, None),
-                (MenuDiffMenu, [
-                    (MenuDiff, None),
-                    (MenuDiffPrevRev, None),
-                    (MenuDiffMultiple, None),
-                    (MenuCompareTool, None),
-                    (MenuCompareToolPrevRev, None),
-                    (MenuCompareToolMultiple, None),
-                    (MenuShowChanges, None),
-                ]),
-                (MenuShowLog, None),
-                (MenuRepoBrowser, None),
-                (MenuCheckForModifications, None),
-                (MenuSeparator, None),
-                (MenuAdd, None),
-                (MenuAddToIgnoreList, ignore_items),
-                (MenuSeparator, None),
-                (MenuUpdateToRevision, None),
-                (MenuRename, None),
-                (MenuDelete, None),
-                (MenuRevert, None),
-                (MenuEditConflicts, None),
-                (MenuMarkResolved, None),
-                (MenuRelocate, None),
-                (MenuGetLock, None),
-                (MenuUnlock, None),
-                (MenuCleanup, None),
-                (MenuSeparator, None),
-                (MenuExport, None),
-                (MenuCreateRepository, None),
-                (MenuImport, None),
-                (MenuSeparator, None),
-                (MenuBranchTag, None),
-                (MenuSwitch, None),
-                (MenuMerge, None),
-                (MenuSeparator, None),
-                (MenuAnnotate, None),
-                (MenuSeparator, None),
-                (MenuCreatePatch, None),
-                (MenuApplyPatch, None),
-                (MenuProperties, None),
-                (MenuSeparator, None),
-                (MenuSettings, None),
-                (MenuAbout, None)
-            ]),
-            (MenuRabbitVCSGit, [
-                (MenuClone, None),
-                (MenuInitializeRepository, None),
-                (MenuSeparator, None),
-                (MenuDiffMenu, [
-                    (MenuDiff, None),
-                    (MenuDiffPrevRev, None),
-                    (MenuDiffMultiple, None),
-                    (MenuCompareTool, None),
-                    (MenuCompareToolPrevRev, None),
-                    (MenuCompareToolMultiple, None),
-                    (MenuShowChanges, None),
-                ]),
-                (MenuShowLog, None),
-                (MenuStage, None),
-                (MenuUnstage, None),
-                (MenuAddToIgnoreList, ignore_items),
-                (MenuSeparator, None),
-                (MenuRename, None),
-                (MenuDelete, None),
-                (MenuRevert, None),
-                (MenuEditConflicts, None),
-                (MenuClean, None),
-                (MenuReset, None),
-                (MenuCheckout, None),
-                (MenuSeparator, None),
-                (MenuBranches, None),
-                (MenuTags, None),
-                (MenuRemotes, None),
-                (MenuSeparator, None),
-                (MenuExport, None),
-                (MenuMerge, None),
-                (MenuSeparator, None),
-                (MenuAnnotate, None),
-                (MenuSeparator, None),
-                (MenuCreatePatch, None),
-                (MenuApplyPatch, None),
-                (MenuSeparator, None),
-                (MenuSettings, None),
-                (MenuAbout, None)
-            ])
+            (
+                MenuRabbitVCSSvn,
+                [
+                    (MenuCheckout, None),
+                    (
+                        MenuDiffMenu,
+                        [
+                            (MenuDiff, None),
+                            (MenuDiffPrevRev, None),
+                            (MenuDiffMultiple, None),
+                            (MenuCompareTool, None),
+                            (MenuCompareToolPrevRev, None),
+                            (MenuCompareToolMultiple, None),
+                            (MenuShowChanges, None),
+                        ],
+                    ),
+                    (MenuShowLog, None),
+                    (MenuRepoBrowser, None),
+                    (MenuCheckForModifications, None),
+                    (MenuSeparator, None),
+                    (MenuAdd, None),
+                    (MenuAddToIgnoreList, ignore_items),
+                    (MenuSeparator, None),
+                    (MenuUpdateToRevision, None),
+                    (MenuRename, None),
+                    (MenuDelete, None),
+                    (MenuRevert, None),
+                    (MenuEditConflicts, None),
+                    (MenuMarkResolved, None),
+                    (MenuRelocate, None),
+                    (MenuGetLock, None),
+                    (MenuUnlock, None),
+                    (MenuCleanup, None),
+                    (MenuSeparator, None),
+                    (MenuExport, None),
+                    (MenuCreateRepository, None),
+                    (MenuImport, None),
+                    (MenuSeparator, None),
+                    (MenuBranchTag, None),
+                    (MenuSwitch, None),
+                    (MenuMerge, None),
+                    (MenuSeparator, None),
+                    (MenuAnnotate, None),
+                    (MenuSeparator, None),
+                    (MenuCreatePatch, None),
+                    (MenuApplyPatch, None),
+                    (MenuProperties, None),
+                    (MenuSeparator, None),
+                    (MenuSettings, None),
+                    (MenuAbout, None),
+                ],
+            ),
+            (
+                MenuRabbitVCSGit,
+                [
+                    (MenuClone, None),
+                    (MenuInitializeRepository, None),
+                    (MenuSeparator, None),
+                    (
+                        MenuDiffMenu,
+                        [
+                            (MenuDiff, None),
+                            (MenuDiffPrevRev, None),
+                            (MenuDiffMultiple, None),
+                            (MenuCompareTool, None),
+                            (MenuCompareToolPrevRev, None),
+                            (MenuCompareToolMultiple, None),
+                            (MenuShowChanges, None),
+                        ],
+                    ),
+                    (MenuShowLog, None),
+                    (MenuStage, None),
+                    (MenuUnstage, None),
+                    (MenuAddToIgnoreList, ignore_items),
+                    (MenuSeparator, None),
+                    (MenuRename, None),
+                    (MenuDelete, None),
+                    (MenuRevert, None),
+                    (MenuEditConflicts, None),
+                    (MenuClean, None),
+                    (MenuReset, None),
+                    (MenuCheckout, None),
+                    (MenuSeparator, None),
+                    (MenuBranches, None),
+                    (MenuTags, None),
+                    (MenuRemotes, None),
+                    (MenuSeparator, None),
+                    (MenuExport, None),
+                    (MenuMerge, None),
+                    (MenuSeparator, None),
+                    (MenuAnnotate, None),
+                    (MenuSeparator, None),
+                    (MenuCreatePatch, None),
+                    (MenuApplyPatch, None),
+                    (MenuSeparator, None),
+                    (MenuSettings, None),
+                    (MenuAbout, None),
+                ],
+            ),
         ]
 
     def get_menu(self):

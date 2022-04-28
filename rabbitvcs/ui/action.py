@@ -21,6 +21,18 @@
 #
 
 from __future__ import division
+from rabbitvcs.util.log import Log
+from rabbitvcs import gettext
+from rabbitvcs.util.decorators import gtk_unsafe
+from rabbitvcs.ui.dialog import MessageBox
+from rabbitvcs.util.strings import S
+from rabbitvcs.util import helper
+import rabbitvcs.vcs
+import rabbitvcs.util
+import rabbitvcs.ui.dialog
+import rabbitvcs.ui.widget
+from rabbitvcs.ui import InterfaceView
+from gi.repository import Gtk, GObject, Gdk
 from __future__ import absolute_import
 import threading
 
@@ -28,26 +40,16 @@ from os.path import basename
 
 import shutil
 import gi
+
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GObject, Gdk
 
-from rabbitvcs.ui import InterfaceView
-import rabbitvcs.ui.widget
-import rabbitvcs.ui.dialog
-import rabbitvcs.util
-import rabbitvcs.vcs
-from rabbitvcs.util import helper
-from rabbitvcs.util.strings import S
-from rabbitvcs.ui.dialog import MessageBox
-from rabbitvcs.util.decorators import gtk_unsafe
 
-from rabbitvcs import gettext
 _ = gettext.gettext
 
 helper.gobject_threads_init()
 
-from rabbitvcs.util.log import Log
 log = Log("rabbitvcs.ui.action")
+
 
 class VCSNotifier(InterfaceView):
     """
@@ -77,6 +79,7 @@ class VCSNotifier(InterfaceView):
     def focus_on_ok_button(self):
         pass
 
+
 class DummyNotifier(object):
     def __init__(self):
         pass
@@ -91,6 +94,7 @@ class DummyNotifier(object):
     def exception_callback(self, e):
         log.exception(e)
         MessageBox(str(e))
+
 
 class MessageCallbackNotifier(VCSNotifier):
     """
@@ -118,12 +122,10 @@ class MessageCallbackNotifier(VCSNotifier):
         self.table = rabbitvcs.ui.widget.Table(
             self.get_widget("table"),
             [GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_STRING],
-            [_("Action"), _("Path"), _("Mime Type")]
+            [_("Action"), _("Path"), _("Mime Type")],
         )
 
-        self.pbar = rabbitvcs.ui.widget.ProgressBar(
-            self.get_widget("pbar")
-        )
+        self.pbar = rabbitvcs.ui.widget.ProgressBar(self.get_widget("pbar"))
         self.pbar.start_pulsate()
         self.finished = False
 
@@ -170,7 +172,7 @@ class MessageCallbackNotifier(VCSNotifier):
         self.set_title(header)
 
         self.get_widget("action").set_markup(
-            "<span size=\"xx-large\"><b>%s</b></span>" % header
+            '<span size="xx-large"><b>%s</b></span>' % header
         )
 
     @gtk_unsafe
@@ -194,6 +196,7 @@ class MessageCallbackNotifier(VCSNotifier):
     def saveas(self, path=None):
         if path is None:
             from rabbitvcs.ui.dialog import FileSaveAs
+
             dialog = FileSaveAs()
             path = dialog.run()
 
@@ -201,6 +204,7 @@ class MessageCallbackNotifier(VCSNotifier):
             fh = open(path, "w")
             fh.write(self.table.generate_string_from_data())
             fh.close()
+
 
 class LoadingNotifier(VCSNotifier):
 
@@ -211,9 +215,7 @@ class LoadingNotifier(VCSNotifier):
 
         VCSNotifier.__init__(self, callback_cancel, visible)
 
-        self.pbar = rabbitvcs.ui.widget.ProgressBar(
-            self.get_widget("pbar")
-        )
+        self.pbar = rabbitvcs.ui.widget.ProgressBar(self.get_widget("pbar"))
         self.pbar.start_pulsate()
 
     def on_destroy(self, widget):
@@ -242,6 +244,7 @@ class LoadingNotifier(VCSNotifier):
             log.exception(e)
             MessageBox(str(e))
 
+
 class VCSAction(threading.Thread):
     """
     Provides a central interface to handle vcs actions & callbacks.
@@ -249,8 +252,9 @@ class VCSAction(threading.Thread):
 
     """
 
-    def __init__(self, client, register_gtk_quit=False, notification=True,
-            run_in_thread=True):
+    def __init__(
+        self, client, register_gtk_quit=False, notification=True, run_in_thread=True
+    ):
 
         self.run_in_thread = run_in_thread
 
@@ -271,7 +275,7 @@ class VCSAction(threading.Thread):
             self.notification = MessageCallbackNotifier(
                 self.set_cancel,
                 notification,
-                client_in_same_thread=self.client_in_same_thread
+                client_in_same_thread=self.client_in_same_thread,
             )
             self.has_notifier = True
         elif run_in_thread:
@@ -357,9 +361,7 @@ class VCSAction(threading.Thread):
         """
 
         if self.has_notifier:
-            self.notification.append(
-                ["", _("Finished"), ""]
-            )
+            self.notification.append(["", _("Finished"), ""])
             self.notification.focus_on_ok_button()
             title = self.notification.get_title()
             self.notification.set_title(_("%s - Finished") % title)
@@ -388,8 +390,10 @@ class VCSAction(threading.Thread):
         if message is None:
             settings = rabbitvcs.util.settings.SettingsManager()
             message = settings.get_multiline("general", "default_commit_message")
-            result = helper.run_in_main_thread(lambda: rabbitvcs.ui.dialog.TextChange(_("Log Message"), message).run())
-            should_continue = (result[0] == Gtk.ResponseType.OK)
+            result = helper.run_in_main_thread(
+                lambda: rabbitvcs.ui.dialog.TextChange(_("Log Message"), message).run()
+            )
+            should_continue = result[0] == Gtk.ResponseType.OK
             message = result[1]
         if isinstance(message, bytes):
             message = message.decode()
@@ -425,7 +429,9 @@ class VCSAction(threading.Thread):
         if self.login_tries >= 3:
             return (False, "", "", False)
 
-        result = helper.run_in_main_thread(lambda: rabbitvcs.ui.dialog.Authentication(realm, may_save).run())
+        result = helper.run_in_main_thread(
+            lambda: rabbitvcs.ui.dialog.Authentication(realm, may_save).run()
+        )
 
         if result is not None:
             self.login_tries += 1
@@ -451,23 +457,25 @@ class VCSAction(threading.Thread):
 
         result = 0
         if data:
-            result = helper.run_in_main_thread(lambda: rabbitvcs.ui.dialog.Certificate(
-                data["realm"],
-                data["hostname"],
-                data["issuer_dname"],
-                data["valid_from"],
-                data["valid_until"],
-                data["finger_print"]
-            ).run())
+            result = helper.run_in_main_thread(
+                lambda: rabbitvcs.ui.dialog.Certificate(
+                    data["realm"],
+                    data["hostname"],
+                    data["issuer_dname"],
+                    data["valid_from"],
+                    data["valid_until"],
+                    data["finger_print"],
+                ).run()
+            )
 
         if result == 0:
-            #Deny
+            # Deny
             return (False, 0, False)
         elif result == 1:
-            #Accept Once
+            # Accept Once
             return (True, data["failures"], False)
         elif result == 2:
-            #Accept Forever
+            # Accept Forever
             return (True, data["failures"], True)
 
     def get_ssl_password(self, realm, may_save):
@@ -487,10 +495,9 @@ class VCSAction(threading.Thread):
         @return:            (True=continue/False=cancel, password, may save)
         """
 
-        return helper.run_in_main_thread(lambda: rabbitvcs.ui.dialog.CertAuthentication(
-                realm,
-                may_save
-            ).run())
+        return helper.run_in_main_thread(
+            lambda: rabbitvcs.ui.dialog.CertAuthentication(realm, may_save).run()
+        )
 
     def get_client_cert(self, realm, may_save):
         """
@@ -509,10 +516,9 @@ class VCSAction(threading.Thread):
         @return:            (True=continue/False=cancel, password, may save)
         """
 
-        return helper.run_in_main_thread(lambda: rabbitvcs.ui.dialog.SSLClientCertPrompt(
-                realm,
-                may_save
-            ).run())
+        return helper.run_in_main_thread(
+            lambda: rabbitvcs.ui.dialog.SSLClientCertPrompt(realm, may_save).run()
+        )
 
     def set_log_message(self, message):
         """
@@ -608,9 +614,11 @@ class VCSAction(threading.Thread):
     def stop_loader(self):
         self.stop()
 
+
 class SVNAction(VCSAction):
-    def __init__(self, client, register_gtk_quit=False, notification=True,
-            run_in_thread=True):
+    def __init__(
+        self, client, register_gtk_quit=False, notification=True, run_in_thread=True
+    ):
 
         self.client_in_same_thread = False
 
@@ -623,9 +631,7 @@ class SVNAction(VCSAction):
         self.client.set_callback_ssl_client_cert_password_prompt(self.get_ssl_password)
         self.client.set_callback_ssl_client_cert_prompt(self.get_client_cert)
 
-        VCSAction.__init__(self, client, register_gtk_quit, notification,
-            run_in_thread)
-
+        VCSAction.__init__(self, client, register_gtk_quit, notification, run_in_thread)
 
     def notify(self, data):
         """
@@ -664,38 +670,37 @@ class SVNAction(VCSAction):
                     is_complete_action = True
                     break
 
-            if (is_known_action
-                    and is_complete_action
-                    and "revision" in data
-                    and data["revision"]):
+            if (
+                is_known_action
+                and is_complete_action
+                and "revision" in data
+                and data["revision"]
+            ):
                 self.notification.append(
                     ["", "Revision %s" % data["revision"].number, ""]
                 )
             elif "path" in data:
-                self.notification.append([
-                    action,
-                    data["path"],
-                    data["mime_type"]
-                ])
+                self.notification.append([action, data["path"], data["mime_type"]])
 
     def conflict_filter(self, data):
         if "content_state" in data and str(data["content_state"]) == "conflicted":
             position = self.queue.get_position()
-            self.queue.insert(position+1, self.edit_conflict, data)
+            self.queue.insert(position + 1, self.edit_conflict, data)
 
     def edit_conflict(self, data):
         helper.launch_ui_window("editconflicts", [data["path"]], block=True)
 
+
 class GitAction(VCSAction):
-    def __init__(self, client, register_gtk_quit=False, notification=True,
-            run_in_thread=True):
+    def __init__(
+        self, client, register_gtk_quit=False, notification=True, run_in_thread=True
+    ):
 
         self.client_in_same_thread = True
 
         self.client = client
 
-        VCSAction.__init__(self, client, register_gtk_quit, notification,
-            run_in_thread)
+        VCSAction.__init__(self, client, register_gtk_quit, notification, run_in_thread)
 
         self.client.set_callback_notify(self.notify)
         self.client.set_callback_progress_update(self.set_progress_fraction)
@@ -707,25 +712,27 @@ class GitAction(VCSAction):
             if data:
                 self.conflict_filter(data)
                 if isinstance(data, dict):
-                    self.notification.append([
-                        data["action"],
-                        data["path"],
-                        data["mime_type"]
-                    ])
+                    self.notification.append(
+                        [data["action"], data["path"], data["mime_type"]]
+                    )
                 else:
                     self.notification.append(["", data, ""])
 
     def get_user(self):
-        return helper.run_in_main_thread(lambda: rabbitvcs.ui.dialog.NameEmailPrompt().run())
+        return helper.run_in_main_thread(
+            lambda: rabbitvcs.ui.dialog.NameEmailPrompt().run()
+        )
 
     def conflict_filter(self, data):
         if str(data).startswith("ERROR:"):
             path = data[27:]
             helper.launch_ui_window("editconflicts", [path], block=True)
 
+
 class MercurialAction(VCSAction):
-    def __init__(self, client, register_gtk_quit=False, notification=True,
-            run_in_thread=True):
+    def __init__(
+        self, client, register_gtk_quit=False, notification=True, run_in_thread=True
+    ):
 
         self.client_in_same_thread = True
 
@@ -734,36 +741,35 @@ class MercurialAction(VCSAction):
         self.client.set_callback_get_user(self.get_user)
         self.client.set_callback_get_cancel(self.cancel)
 
-        VCSAction.__init__(self, client, register_gtk_quit, notification,
-            run_in_thread)
+        VCSAction.__init__(self, client, register_gtk_quit, notification, run_in_thread)
 
     def notify(self, data):
         if self.has_notifier:
             if data:
                 self.conflict_filter(data)
                 if isinstance(data, dict):
-                    self.notification.append([
-                        data["action"],
-                        data["path"],
-                        data["mime_type"]
-                    ])
+                    self.notification.append(
+                        [data["action"], data["path"], data["mime_type"]]
+                    )
                 else:
                     self.notification.append(["", data, ""])
 
     def get_user(self):
-        return helper.run_in_main_thread(lambda: rabbitvcs.ui.dialog.NameEmailPrompt().run())
+        return helper.run_in_main_thread(
+            lambda: rabbitvcs.ui.dialog.NameEmailPrompt().run()
+        )
 
     def conflict_filter(self, data):
         if str(data).startswith("ERROR:"):
             path = data[27:]
             helper.launch_ui_window("editconflicts", [path], block=True)
 
-def vcs_action_factory(client, register_gtk_quit=False, notification=True,
-        run_in_thread=True):
+
+def vcs_action_factory(
+    client, register_gtk_quit=False, notification=True, run_in_thread=True
+):
 
     if client.vcs == rabbitvcs.vcs.VCS_GIT:
-        return GitAction(client, register_gtk_quit, notification,
-            run_in_thread)
+        return GitAction(client, register_gtk_quit, notification, run_in_thread)
     else:
-        return SVNAction(client, register_gtk_quit, notification,
-            run_in_thread)
+        return SVNAction(client, register_gtk_quit, notification, run_in_thread)

@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
+
 #!/usr/bin/env python
 
 # If you didn't know already, this is a Python distutils setup script. It borrows
@@ -41,50 +42,55 @@ PREFIX = sys.prefix
 for c in sys.argv:
     if c.startswith("--prefix="):
         PREFIX = c.split("=", 1)[1].strip()
-    elif c == '--user':
+    elif c == "--user":
         PREFIX = os.path.expanduser("~/.local")
 
-#==============================================================================
+# ==============================================================================
 # Variables
-#==============================================================================
+# ==============================================================================
 
 # Some descriptive variables
 # This will eventually be passed to the setup function, but we already need them
 # for doing some other stuff so we have to declare them here.
-name                = "rabbitvcs"
-version             = "0.18"
-description         = "Easy version control"
-long_description    = """RabbitVCS is a set of graphical tools written to provide simple and straightforward access to the version control systems you use."""
-author              = "Adam Plumb"
-author_email        = "adamplumb@gmail.com"
-url                 = "http://www.rabbitvcs.org"
-license             = "GNU General Public License version 2 or later"
+name = "rabbitvcs"
+version = "0.18"
+description = "Easy version control"
+long_description = """RabbitVCS is a set of graphical tools written to provide simple and straightforward access to the version control systems you use."""
+author = "Adam Plumb"
+author_email = "adamplumb@gmail.com"
+url = "http://www.rabbitvcs.org"
+license = "GNU General Public License version 2 or later"
 
-#==============================================================================
+# ==============================================================================
 # Paths
-#==============================================================================
+# ==============================================================================
 
 icon_theme_directory = "share/icons/hicolor"
 locale_directory = "share/locale"
 
-#==============================================================================
+# ==============================================================================
 # Helper functions
-#==============================================================================
+# ==============================================================================
+
 
 def include_by_pattern(directory, directory_to_install, pattern):
     files_to_include = []
     for root, dirs, files in os.walk(directory):
         for file in files:
             if file.endswith(pattern):
-                files_to_include.append((
-                    root.replace(directory, directory_to_install),
-                    [os.path.join(root, file)]
-                ))
+                files_to_include.append(
+                    (
+                        root.replace(directory, directory_to_install),
+                        [os.path.join(root, file)],
+                    )
+                )
     return files_to_include
 
-#==============================================================================
+
+# ==============================================================================
 # Gather all the files that need to be included
-#==============================================================================
+# ==============================================================================
+
 
 # Packages
 packages = []
@@ -100,29 +106,27 @@ icons = include_by_pattern("data/icons/hicolor", icon_theme_directory, ".svg")
 icons += include_by_pattern("data/icons/hicolor", icon_theme_directory, ".png")
 
 # Config parsing specification
-config_spec = [(
-    "share/rabbitvcs",
-    ["rabbitvcs/util/configspec/configspec.ini"]
-)]
+config_spec = [("share/rabbitvcs", ["rabbitvcs/util/configspec/configspec.ini"])]
 
 # Documentation
-documentation = [("share/doc/rabbitvcs", [
-    "AUTHORS",
-    "MAINTAINERS"
-])]
+documentation = [("share/doc/rabbitvcs", ["AUTHORS", "MAINTAINERS"])]
 
 # Save build information so we can access the prefix later
 path = "rabbitvcs/buildinfo.py"
-buildinfo = '''rabbitvcs_prefix = "%s"
+buildinfo = """rabbitvcs_prefix = "%s"
 icon_path = "%s/%s"
-''' % (PREFIX, PREFIX, icon_theme_directory)
+""" % (
+    PREFIX,
+    PREFIX,
+    icon_theme_directory,
+)
 fh = open(path, "w")
 fh.write(buildinfo)
 fh.close()
 
-#==============================================================================
+# ==============================================================================
 # Ready to install
-#==============================================================================
+# ==============================================================================
 
 # Calling the setup function will actually install RabbitVCS and also creates
 # an .egg-info file in /usr/lib/python<version>/site-packages/ or
@@ -139,7 +143,6 @@ dist = setup(
     author_email=author_email,
     url=url,
     license=license,
-
     # There are actually several arguments that are used to install files:
     # - py_modules: installs specific modules to site-packages
     # - packages: install complete packages (directories with an __init__.py
@@ -150,10 +153,10 @@ dist = setup(
         "rabbitvcs": [
             # Include our GtkBuilder UI files right into the package
             "ui/xml/*.xml",
-            "ui/xml/dialogs/*.xml"
+            "ui/xml/dialogs/*.xml",
         ]
     },
-    data_files=translations + icons + documentation + config_spec
+    data_files=translations + icons + documentation + config_spec,
 )
 
 #
@@ -163,10 +166,10 @@ dist = setup(
 # Make sure the icon cache is deleted and recreated
 if sys.argv[1] == "install":
 
-    if os.uname()[0] != 'Darwin':
+    if os.uname()[0] != "Darwin":
         print("Running gtk-update-icon-cache")
 
         subprocess.Popen(
             ["gtk-update-icon-cache", os.path.join(PREFIX, icon_theme_directory)],
-            stdout=subprocess.PIPE
+            stdout=subprocess.PIPE,
         ).communicate()[0]
