@@ -20,10 +20,10 @@ For subversion:
 For git:
 * dulwich >= 0.19.0
 * git
-* tkinter (for now)
+* tkinter (for now, newer versions of ubuntu this is called python-tk)
 
 For spell checking of commit messages (optional):
-* python-gtkspell
+* python-gtkspell (newer versions of ubuntu, this is called python-gtkspellcheck)
 * hunspell langpacks
 
 For syntax highlighting (optional):
@@ -35,7 +35,7 @@ Recommends:
 
 For Debian-based distros you can run: 
 ```
-# apt-get install python-gtk3 python-configobj python-gobject python-gtkspell python-svn subversion python-dulwich python-pygments git meld tkinter
+# apt-get install python-gtk3 python-configobj python-gobject python-gtkspellcheck python-svn subversion python-dulwich python-pygments git meld python-tk
 ```
 
 For Fedora-based distros you can run:
