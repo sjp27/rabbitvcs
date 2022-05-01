@@ -77,7 +77,7 @@ its own README. Here is a list of our currently working clients:
  * [Thunar](https://github.com/rabbitvcs/rabbitvcs/tree/master/clients/thunar)
  * [Nemo](https://github.com/rabbitvcs/rabbitvcs/tree/master/clients/nemo)
  * [Caja](https://github.com/rabbitvcs/rabbitvcs/tree/master/clients/caja)
- * [PCManFM-Qt](https://github.com/ahsand97/rabbitvcs/tree/master/clients/pcmanfm-qt)
+ * [PCManFM-Qt](https://github.com/rabbitvcs/rabbitvcs/tree/master/clients/pcmanfm-qt)
  * [Command Line](https://github.com/rabbitvcs/rabbitvcs/tree/master/clients/cli)
 
 We have some others as well that are either incomplete, experimental
