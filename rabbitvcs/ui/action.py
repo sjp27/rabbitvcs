@@ -20,7 +20,7 @@
 # along with RabbitVCS;  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import division
+from __future__ import division, absolute_import
 from rabbitvcs.util.log import Log
 from rabbitvcs import gettext
 from rabbitvcs.util.decorators import gtk_unsafe
@@ -33,7 +33,6 @@ import rabbitvcs.ui.dialog
 import rabbitvcs.ui.widget
 from rabbitvcs.ui import InterfaceView
 from gi.repository import Gtk, GObject, Gdk
-from __future__ import absolute_import
 import threading
 
 from os.path import basename
