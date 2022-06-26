@@ -25,6 +25,11 @@ Unit tests for the top-level rabbitvcs package.
 
 """
 from __future__ import absolute_import
+from os.path import normpath, join, dirname, abspath
+import sys
+
+toplevel = normpath(join(dirname(abspath(__file__)), "..", ".."))
+sys.path.insert(0, toplevel)
 from rabbitvcs.util.extensions.nautilus import RabbitVCS
 import rabbitvcs
 import pysvn
@@ -35,9 +40,6 @@ from unittest import TestCase, main
 # make sure the current working copy is in sys.path before anything else
 from os.path import abspath, dirname, join, normpath
 import sys
-
-toplevel = normpath(join(dirname(abspath(__file__)), "..", ".."))
-sys.path.insert(0, toplevel)
 
 
 class RabbitVCSTest(TestCase):
