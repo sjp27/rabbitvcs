@@ -20,7 +20,7 @@
 # along with RabbitVCS;  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import division
+from __future__ import division, absolute_import
 from six.moves import range
 from rabbitvcs import gettext
 import rabbitvcs.vcs
@@ -34,7 +34,6 @@ from rabbitvcs.ui.dialog import MessageBox
 from rabbitvcs.ui.action import SVNAction, GitAction, vcs_action_factory
 from rabbitvcs.ui import InterfaceView
 from gi.repository import Gtk, GObject, Gdk
-from __future__ import absolute_import
 import six
 import threading
 from locale import strxfrm

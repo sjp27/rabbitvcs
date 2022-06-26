@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 from rabbitvcs import gettext
 import rabbitvcs.vcs
 from rabbitvcs.ui.dialog import DeleteConfirmation
@@ -8,7 +8,6 @@ from rabbitvcs.ui import InterfaceView
 import time
 from datetime import datetime
 from gi.repository import Gtk, GObject, Gdk, Pango
-from __future__ import print_function
 
 #
 # This is an extension to the Nautilus file manager to allow better
