@@ -27,7 +27,7 @@ Our module for everything related to the Nautilus extension.
 """
 from __future__ import with_statement
 from __future__ import absolute_import
-from rabbitvcs.util.contextmenuitems import *
+from rabbitvcs.util.contextmenuitems4 import *
 import copy
 from rabbitvcs.services.checkerservice import StatusCheckerStub as StatusChecker
 import rabbitvcs.services.service
@@ -35,10 +35,10 @@ from rabbitvcs.util.settings import SettingsManager
 from rabbitvcs import version as EXT_VERSION
 from rabbitvcs import gettext, get_icon_path
 from rabbitvcs.util.log import Log, reload_log_settings
-import rabbitvcs.ui.property_page
+import rabbitvcs.ui.property_page4
 import rabbitvcs.ui
 from rabbitvcs.util.strings import S
-from rabbitvcs.util.contextmenu import (
+from rabbitvcs.util.contextmenu4 import (
     MenuBuilder,
     MainContextMenu,
     SEPARATOR,
@@ -104,7 +104,7 @@ class RabbitVCS(
     Nautilus.InfoProvider,
     Nautilus.MenuProvider,
     Nautilus.ColumnProvider,
-    Nautilus.PropertyPageProvider,
+    Nautilus.PropertiesModelProvider,
     GObject.GObject,
 ):
     """
@@ -142,72 +142,72 @@ class RabbitVCS(
         return item.get_location().get_path()
 
     def __init__(self):
-        factory = Gtk.IconFactory()
+        # factory = Gtk.IconFactory()
 
-        rabbitvcs_icons = [
-            "scalable/actions/rabbitvcs-cancel.svg",
-            "scalable/actions/rabbitvcs-ok.svg",
-            "scalable/actions/rabbitvcs-no.svg",
-            "scalable/actions/rabbitvcs-yes.svg",
-            "scalable/actions/rabbitvcs-settings.svg",
-            "scalable/actions/rabbitvcs-export.svg",
-            "scalable/actions/rabbitvcs-properties.svg",
-            "scalable/actions/rabbitvcs-editprops.svg",
-            "scalable/actions/rabbitvcs-show_log.svg",
-            "scalable/actions/rabbitvcs-delete.svg",
-            "scalable/actions/rabbitvcs-run.svg",
-            "scalable/actions/rabbitvcs-unlock.svg",
-            "scalable/actions/rabbitvcs-dbus.svg",
-            "scalable/actions/rabbitvcs-rename.svg",
-            "scalable/actions/rabbitvcs-help.svg",
-            "scalable/actions/rabbitvcs-update.svg",
-            "scalable/actions/rabbitvcs-diff.svg",
-            "scalable/actions/rabbitvcs-resolve.svg",
-            "scalable/actions/rabbitvcs-about.svg",
-            "scalable/actions/rabbitvcs-add.svg",
-            "scalable/actions/rabbitvcs-changes.svg",
-            "scalable/actions/rabbitvcs-createpatch.svg",
-            "scalable/actions/rabbitvcs-merge.svg",
-            "scalable/actions/rabbitvcs-drive.svg",
-            "scalable/actions/rabbitvcs-stop.svg",
-            "scalable/actions/rabbitvcs-checkout.svg",
-            "scalable/actions/rabbitvcs-import.svg",
-            "scalable/actions/rabbitvcs-branch.svg",
-            "scalable/actions/rabbitvcs-refresh.svg",
-            "scalable/actions/rabbitvcs-editconflicts.svg",
-            "scalable/actions/rabbitvcs-monkey.svg",
-            "scalable/actions/rabbitvcs-applypatch.svg",
-            "scalable/actions/rabbitvcs-switch.svg",
-            "scalable/actions/rabbitvcs-lock.svg",
-            "scalable/actions/rabbitvcs-annotate.svg",
-            "scalable/actions/rabbitvcs-compare.svg",
-            "scalable/actions/rabbitvcs-revert.svg",
-            "scalable/actions/rabbitvcs-bug.svg",
-            "scalable/actions/rabbitvcs-cleanup.svg",
-            "scalable/actions/rabbitvcs-clear.svg",
-            "scalable/actions/rabbitvcs-unstage.svg",
-            "scalable/actions/rabbitvcs-emblems.svg",
-            "scalable/actions/rabbitvcs-relocate.svg",
-            "scalable/actions/rabbitvcs-reset.svg",
-            "scalable/actions/rabbitvcs-asynchronous.svg",
-            "scalable/actions/rabbitvcs-commit.svg",
-            "scalable/actions/rabbitvcs-checkmods.svg",
-            "scalable/apps/rabbitvcs.svg",
-            "scalable/apps/rabbitvcs-small.svg",
-            "16x16/actions/rabbitvcs-push.png",
-        ]
+        # rabbitvcs_icons = [
+        #     "scalable/actions/rabbitvcs-cancel.svg",
+        #     "scalable/actions/rabbitvcs-ok.svg",
+        #     "scalable/actions/rabbitvcs-no.svg",
+        #     "scalable/actions/rabbitvcs-yes.svg",
+        #     "scalable/actions/rabbitvcs-settings.svg",
+        #     "scalable/actions/rabbitvcs-export.svg",
+        #     "scalable/actions/rabbitvcs-properties.svg",
+        #     "scalable/actions/rabbitvcs-editprops.svg",
+        #     "scalable/actions/rabbitvcs-show_log.svg",
+        #     "scalable/actions/rabbitvcs-delete.svg",
+        #     "scalable/actions/rabbitvcs-run.svg",
+        #     "scalable/actions/rabbitvcs-unlock.svg",
+        #     "scalable/actions/rabbitvcs-dbus.svg",
+        #     "scalable/actions/rabbitvcs-rename.svg",
+        #     "scalable/actions/rabbitvcs-help.svg",
+        #     "scalable/actions/rabbitvcs-update.svg",
+        #     "scalable/actions/rabbitvcs-diff.svg",
+        #     "scalable/actions/rabbitvcs-resolve.svg",
+        #     "scalable/actions/rabbitvcs-about.svg",
+        #     "scalable/actions/rabbitvcs-add.svg",
+        #     "scalable/actions/rabbitvcs-changes.svg",
+        #     "scalable/actions/rabbitvcs-createpatch.svg",
+        #     "scalable/actions/rabbitvcs-merge.svg",
+        #     "scalable/actions/rabbitvcs-drive.svg",
+        #     "scalable/actions/rabbitvcs-stop.svg",
+        #     "scalable/actions/rabbitvcs-checkout.svg",
+        #     "scalable/actions/rabbitvcs-import.svg",
+        #     "scalable/actions/rabbitvcs-branch.svg",
+        #     "scalable/actions/rabbitvcs-refresh.svg",
+        #     "scalable/actions/rabbitvcs-editconflicts.svg",
+        #     "scalable/actions/rabbitvcs-monkey.svg",
+        #     "scalable/actions/rabbitvcs-applypatch.svg",
+        #     "scalable/actions/rabbitvcs-switch.svg",
+        #     "scalable/actions/rabbitvcs-lock.svg",
+        #     "scalable/actions/rabbitvcs-annotate.svg",
+        #     "scalable/actions/rabbitvcs-compare.svg",
+        #     "scalable/actions/rabbitvcs-revert.svg",
+        #     "scalable/actions/rabbitvcs-bug.svg",
+        #     "scalable/actions/rabbitvcs-cleanup.svg",
+        #     "scalable/actions/rabbitvcs-clear.svg",
+        #     "scalable/actions/rabbitvcs-unstage.svg",
+        #     "scalable/actions/rabbitvcs-emblems.svg",
+        #     "scalable/actions/rabbitvcs-relocate.svg",
+        #     "scalable/actions/rabbitvcs-reset.svg",
+        #     "scalable/actions/rabbitvcs-asynchronous.svg",
+        #     "scalable/actions/rabbitvcs-commit.svg",
+        #     "scalable/actions/rabbitvcs-checkmods.svg",
+        #     "scalable/apps/rabbitvcs.svg",
+        #     "scalable/apps/rabbitvcs-small.svg",
+        #     "16x16/actions/rabbitvcs-push.png",
+        # ]
 
-        rabbitvcs_icon_path = get_icon_path()
-        for rel_icon_path in rabbitvcs_icons:
-            icon_path = "%s/%s" % (rabbitvcs_icon_path, rel_icon_path)
-            file = os.path.basename(rel_icon_path)
-            (root, ext) = os.path.splitext(file)
+        # rabbitvcs_icon_path = get_icon_path()
+        # for rel_icon_path in rabbitvcs_icons:
+        #     icon_path = "%s/%s" % (rabbitvcs_icon_path, rel_icon_path)
+        #     file = os.path.basename(rel_icon_path)
+        #     (root, ext) = os.path.splitext(file)
 
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file(icon_path)
-            iconset = Gtk.IconSet.new_from_pixbuf(pixbuf)
-            factory.add(root, iconset)
+        #     pixbuf = GdkPixbuf.Pixbuf.new_from_file(icon_path)
+        #     iconset = Gtk.IconSet.new_from_pixbuf(pixbuf)
+        #     factory.add(root, iconset)
 
-        factory.add_default()
+        # factory.add_default()
 
         # Create a global client we can use to do VCS related stuff
         self.vcs_client = VCS()
@@ -382,7 +382,7 @@ class RabbitVCS(
     # @timeit
     # FIXME: this is a bottleneck. See generate_statuses() in
     # MainContextMenuConditions.
-    def get_file_items_full(self, provider, window, items):
+    def get_file_items_full(self, provider, items):
         """
         Menu activated with items selected. Nautilus also calls this function
         when rendering submenus, even though this is not needed since the entire
@@ -390,9 +390,6 @@ class RabbitVCS(
 
         Note that calling C{nautilusVFSFile.invalidate_extension_info()} will
         also cause get_file_items to be called.
-
-        @type   window: NautilusNavigationWindow
-        @param  window:
 
         @type   items:  list of NautilusVFSFile
         @param  items:
@@ -443,7 +440,7 @@ class RabbitVCS(
     # ~ @disable
     # This is useful for profiling. Rename it to "get_background_items" and then
     # rename the real function "get_background_items_real".
-    def get_background_items_profile(self, window, item):
+    def get_background_items_profile(self, item):
         import cProfile
 
         path = S(gnomevfs.get_local_path_from_uri(item.get_uri())).replace("/", ":")
@@ -453,18 +450,15 @@ class RabbitVCS(
         )
 
         prof = cProfile.Profile()
-        retval = prof.runcall(self.get_background_items_real, window, item)
+        retval = prof.runcall(self.get_background_items_real, item)
         prof.dump_stats(profile_data_file)
         log.debug("Dumped: %s" % profile_data_file)
         return retval
 
-    def get_background_items_full(self, provider, window, item):
+    def get_background_items_full(self, provider, item):
         """
         Menu activated on entering a directory. Builds context menu for File
         menu and for window background.
-
-        @type   window: NautilusNavigationWindow
-        @param  window:
 
         @type   item:   NautilusVFSFile
         @param  item:
@@ -655,16 +649,16 @@ class RabbitVCS(
         if len(paths) == 0:
             return []
 
-        label = rabbitvcs.ui.property_page.PropertyPageLabel(
-            claim_domain=False
-        ).get_widget()
-        page = rabbitvcs.ui.property_page.PropertyPage(
-            paths, claim_domain=False
-        ).get_widget()
+        # label = rabbitvcs.ui.property_page.PropertyPageLabel(
+        #     claim_domain=False
+        # ).get_widget()
+        # page = rabbitvcs.ui.property_page.PropertyPage(
+        #     paths, claim_domain=False
+        # ).get_widget()
 
-        ppage = Nautilus.PropertyPage(
-            name="RabbitVCS::PropertyPage", label=label, page=page
-        )
+        # ppage = Nautilus.PropertyPage(
+        #     name="RabbitVCS::PropertyPage", label=label, page=page
+        # )
 
         return [ppage]
 

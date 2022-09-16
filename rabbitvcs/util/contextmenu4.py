@@ -30,16 +30,13 @@ from collections import deque
 from six.moves import range
 
 # Yes, * imports are bad. You write it out then.
-from .contextmenuitems import *
+from .contextmenuitems4 import *
 
 from rabbitvcs.util import helper
 
 import gi
 
-try:
-    gi.require_version("Gtk", "3.0")
-except:
-    gi.require_version("Gtk", "4.0")
+gi.require_version("Gtk", "4.0")
 sa = helper.SanitizeArgv()
 from gi.repository import Gtk, GLib
 

@@ -61,6 +61,7 @@ class About(object):
 
         doc_path_root = "/usr/share/doc"
         doc_path_regex = re.compile("rabbitvcs")
+        authors_path = None
         for dir in os.listdir(doc_path_root):
             if doc_path_regex.search(dir):
                 # Find all the doc directories containing "rabbitvcs"
