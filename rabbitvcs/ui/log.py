@@ -703,7 +703,10 @@ class GitLog(Log):
                     "user_data": {"column": 1},
                 }
             ],
-            callbacks={"mouse-event": self.on_revisions_table_mouse_event},
+            callbacks={
+                "mouse-event": self.on_revisions_table_mouse_event,
+                "cursor-changed": self.on_revisions_table_cursor_changed,
+            },
         )
 
         self.paths_table = rabbitvcs.ui.widget.Table(
