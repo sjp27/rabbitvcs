@@ -39,7 +39,10 @@ from locale import strxfrm
 
 import gi
 
-gi.require_version("Gtk", "3.0")
+try:
+    gi.require_version("Gtk", "3.0")
+except:
+    gi.require_version("Gtk", "4.0")
 
 HAS_GTKSPELL = False
 try:
