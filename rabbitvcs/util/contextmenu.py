@@ -366,6 +366,14 @@ class ContextMenuCallbacks(object):
         proc = helper.launch_ui_window("revert", self.paths)
         self.caller.rescan_after_process_exit(proc, self.paths)
 
+    def blame(self, widget, data1=None, data2=None):
+        proc = helper.launch_ui_window("blame", self.paths)
+        self.caller.rescan_after_process_exit(proc, self.paths)
+
+    def diffalt(self, widget, data1=None, data2=None):
+        proc = helper.launch_ui_window("diffalt", self.paths)
+        self.caller.rescan_after_process_exit(proc, self.paths)
+
     def diff(self, widget, data1=None, data2=None):
         proc = helper.launch_ui_window("diff", self.paths)
         self.caller.rescan_after_process_exit(proc, self.paths)
@@ -670,6 +678,25 @@ class ContextMenuConditions(object):
                 not self.path_dict["is_added"])
 
     def commit(self, data=None):
+        if self.path_dict["is_svn"] or self.path_dict["is_git"] or self.path_dict["is_mercurial"]:
+            if self.path_dict["is_in_a_or_a_working_copy"]:
+                if (self.path_dict["is_added"] or
+                        self.path_dict["is_modified"] or
+                        self.path_dict["is_deleted"] or
+                        not self.path_dict["is_versioned"]):
+                    return True
+                elif (self.path_dict["is_dir"]):
+                    return True
+        return False
+
+    def blame(self, data=None):
+        if self.path_dict["is_git"]:
+            if self.path_dict["is_in_a_or_a_working_copy"]:
+                if (not self.path_dict["is_dir"]):
+                    return True
+        return False
+
+    def diffalt(self, data=None):
         if self.path_dict["is_svn"] or self.path_dict["is_git"] or self.path_dict["is_mercurial"]:
             if self.path_dict["is_in_a_or_a_working_copy"]:
                 if (self.path_dict["is_added"] or
@@ -1339,6 +1366,7 @@ class MainContextMenu(object):
                 (MenuInitializeRepository, None),
                 (MenuSeparator, None),
                 (MenuDiffAlt, None),
+                (MenuBlame, None),
 #                (MenuDiffMenu, [
 #                    (MenuDiff, None),
 #                    (MenuDiffPrevRev, None),
