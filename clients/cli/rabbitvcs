@@ -44,9 +44,9 @@ SVN:
 
 Git:
     about, add, annotate, applybranch, branches, changes, checkout, clean, 
-    clone, commit, createpatch, create, delete, diff, editconflicts, export, 
-    ignore, log, merge, open, push, rename, remotes, reset, revert, settings, 
-    tags, update
+    clone, commit, createpatch, create, delete, diff, diffalt, editconflicts,
+    export, ignore, log, merge, open, push, rename, remotes, reset, revert,
+    settings, tags, update
 
 For module specific help type: rabbitvcs <module> -h
 """)

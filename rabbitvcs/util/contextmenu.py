@@ -1338,7 +1338,7 @@ class MainContextMenu(object):
                 (MenuClone, None),
                 (MenuInitializeRepository, None),
                 (MenuSeparator, None),
-                (MenuDiff, None),
+                (MenuDiffAlt, None),
 #                (MenuDiffMenu, [
 #                    (MenuDiff, None),
 #                    (MenuDiffPrevRev, None),
