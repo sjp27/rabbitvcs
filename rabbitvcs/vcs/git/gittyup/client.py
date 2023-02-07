@@ -1765,6 +1765,30 @@ class GittyupClient(object):
 
         return "\n".join(stdout)
 
+    def blame(self, paths=[], line=0):
+        """
+        Checkout a series of paths from a tree or commit.  If no tree or commit
+        information is given, it will check out the files from head.  If no
+        paths are given, all files will be checked out from head.
+
+        @type   paths: list
+        @param  paths: A list of files to checkout
+
+        @type   revision: string
+        @param  revision: The sha or branch to checkout
+
+        """
+        if len(paths) == 1 and paths[0] == self.repo.path:
+            paths = []
+
+        line_option = "--line=" + str(line)
+        cmd = ["git", "gui", "blame", line_option] + paths
+
+        try:
+            (status, stdout, stderr) = GittyupCommand(cmd, cwd=self.repo.path, notify=self.notify, cancel=self.get_cancel()).execute()
+        except GittyupCommandError as e:
+            self.callback_notify(e)
+
     def diff(self, path1, revision_obj1, path2=None, revision_obj2=None, summarize=False):
         """
         Returns the diff between the path(s)/revision(s)
