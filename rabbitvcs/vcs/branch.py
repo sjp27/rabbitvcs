@@ -36,3 +36,12 @@ class BranchEntry(object):
     def __str__(self):
         tracking = self.tracking and " (tracking)" or ""
         return "<BranchEntry %s:%s%s>" % (self.name, self.revision, tracking)
+
+class LocalBranchEntry(BranchEntry):
+    def __init__(self, name, tracking=False, revision="", upstream="", message=""):
+        BranchEntry.__init__(self, name, tracking, revision, message)
+        self.upstream = upstream
+
+    def __str__(self):
+        tracking = self.tracking and " (tracking)" or ""
+        return "<BranchEntry %s:%s%s>" % (self.name, self.revision, tracking)
