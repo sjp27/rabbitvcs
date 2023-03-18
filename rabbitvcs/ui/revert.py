@@ -180,6 +180,13 @@ class GitRevert(Revert):
 
         self.git = self.vcs.git(self.paths[0])
 
+    def on_files_table_row_activated(self, treeview, event, col):
+        paths = self.files_table.get_selected_row_items(1)
+        pathrev1 = helper.create_path_revision_string(paths[0], "base")
+        pathrev2 = helper.create_path_revision_string(paths[0], "working")
+        proc = helper.launch_ui_window("diff", ["-s", pathrev1, pathrev2])
+        self.rescan_after_process_exit(proc, paths)
+
     def on_ok_clicked(self, widget):
         items = self.files_table.get_activated_rows(1)
         if not items:
