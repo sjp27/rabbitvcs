@@ -1427,23 +1427,6 @@ class GitRepositorySelector(object):
         grid.set_column_spacing(6)
         grid.set_hexpand(True)
 
-        # Set up the Repository Line
-        label = Gtk.Label(label=_("Repository:"))
-        label.set_justify(Gtk.Justification.LEFT)
-        label.set_halign(Gtk.Align.START)
-
-        tmp_repos = []
-        for item in self.git.remote_list():
-            tmp_repos.append(item["name"])
-        self.repository_opt = ComboBox(Gtk.ComboBoxText.new_with_entry(), tmp_repos)
-        self.repository_opt.set_active(0)
-        self.repository_opt.cb.connect("changed", self.__repository_changed)
-        self.repository_opt.cb.set_size_request(175, -1)
-        self.repository_opt.cb.set_hexpand(True)
-
-        grid.attach(label, 0, 0, 1, 1)
-        grid.attach(self.repository_opt.cb, 1, 0, 1, 1)
-
         # Set up the Branch line
         label = Gtk.Label(label=_("Branch:"))
         label.set_justify(Gtk.Justification.LEFT)
@@ -1452,11 +1435,12 @@ class GitRepositorySelector(object):
         tmp_branches = []
         active_branch_index = 0
         index = 0
-        for item in self.git.branch_list():
+        for item in self.git.local_branch_list():
             tmp_branches.append(item.name)
 
             if item.tracking:
                 active_branch_index = index
+                active_remote = item.upstream
 
             index += 1
 
@@ -1468,6 +1452,31 @@ class GitRepositorySelector(object):
 
         grid.attach(label, 0, 1, 1, 1)
         grid.attach(self.branch_opt.cb, 1, 1, 1, 1)
+
+        # Set up the Repository Line
+        label = Gtk.Label(label=_("Repository:"))
+        label.set_justify(Gtk.Justification.LEFT)
+        label.set_halign(Gtk.Align.START)
+
+        tmp_repos = []
+        active_remote_index = 0
+        index = 0
+        for item in self.git.remote_list():
+            if item["name"] == active_remote:
+                active_remote_index = index
+
+            index += 1
+
+            tmp_repos.append(item["name"])
+
+        self.repository_opt = ComboBox(Gtk.ComboBoxText.new_with_entry(), tmp_repos)
+        self.repository_opt.set_active(active_remote_index)
+        self.repository_opt.cb.connect("changed", self.__repository_changed)
+        self.repository_opt.cb.set_size_request(175, -1)
+        self.repository_opt.cb.set_hexpand(True)
+
+        grid.attach(label, 0, 0, 1, 1)
+        grid.attach(self.repository_opt.cb, 1, 0, 1, 1)
 
         # Set up the Host line
         label = Gtk.Label(label=_("Host:"))

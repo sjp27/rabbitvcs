@@ -37,7 +37,7 @@ from rabbitvcs.util.strings import S
 import rabbitvcs.vcs
 import rabbitvcs.vcs.status
 import rabbitvcs.vcs.log
-from rabbitvcs.vcs.branch import BranchEntry
+from rabbitvcs.vcs.branch import BranchEntry, LocalBranchEntry
 from rabbitvcs.util.log import Log
 
 log = Log("rabbitvcs.vcs.git")
@@ -417,6 +417,31 @@ class Git(object):
         """
 
         return self.client.branch_rename(old_name, new_name)
+
+    def local_branch_list(self, revision=None):
+        """
+        List all local branches
+
+        """
+
+        revision_str = None
+        if revision:
+            revision_str = revision.primitive()
+
+        results = self.client.local_branch_list(revision_str)
+        branches = []
+        for result in results:
+            branches.append(
+                LocalBranchEntry(
+                    result["name"],
+                    result["tracking"],
+                    result["revision"],
+                    result["upstream"],
+                    result["message"],
+                )
+            )
+
+        return branches
 
     def branch_list(self, revision=None):
         """

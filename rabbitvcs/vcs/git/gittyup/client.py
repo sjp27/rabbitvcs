@@ -668,6 +668,60 @@ class GittyupClient(object):
 
             del self.repo.refs[old_ref_name]
 
+    def local_branch_list(self, commit_sha=None):
+        """
+        List all local branches
+
+        """
+
+        cmd = ["git", "branch", "-lvv", "--no-abbrev"]
+        if commit_sha:
+            cmd += ["--contains", commit_sha]
+
+        try:
+            (status, stdout, stderr) = GittyupCommand(
+                cmd, cwd=self.repo.path, notify=self.notify, cancel=self.get_cancel()
+            ).execute()
+        except GittyupCommandError as e:
+            self.callback_notify(e)
+
+        branches = []
+        for line in stdout:
+            if not line:
+                continue
+
+            components = line.split()
+            if components[0] != "*":
+                components.insert(0, "")
+            tracking = components.pop(0) == "*" and True or False
+            if components[0] == "(no":
+                name = components.pop(0) + " " + components.pop(0)
+            elif components[0] == "(HEAD":
+                continue  # Detached head is not a branch.
+            else:
+                name = components.pop(0)
+            revision = components.pop(0)
+            upstream = None
+            if components[0].startswith("["):
+                upstream = components.pop(0)
+                try:
+                    upstream = upstream[1:upstream.find("/")]
+                except:
+                    upstream = None
+            message = " ".join(components)
+
+            branches.append(
+                {
+                    "tracking": tracking,
+                    "name": name,
+                    "revision": revision,
+                    "upstream": upstream,
+                    "message": message,
+                }
+            )
+
+        return branches
+
     def branch_list(self, commit_sha=None):
         """
         List all branches
