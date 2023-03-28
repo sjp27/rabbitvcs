@@ -1,9 +1,9 @@
+#!/usr/bin/env python
+
 from __future__ import absolute_import
 from __future__ import print_function
 
-#!/usr/bin/env python
-
-# If you didn't know already, this is a Python distutils setup script. It borrows
+# If you didn't know already, this is a Python setuptools script. It borrows
 # heavily from Phatch's (see: http://photobatch.stani.be/).
 #
 # There's a lot of comments here (on purpose) so people can actually learn from
@@ -33,17 +33,23 @@ import sys
 import os
 import os.path
 import subprocess
-from distutils.core import setup
-import distutils.sysconfig
+from setuptools import setup
 
 PREFIX = sys.prefix
 
 # If the user passed --prefix=... then use the new prefix
+newargs = []
+installing = False
 for c in sys.argv:
+    installing |= c == "install"
     if c.startswith("--prefix="):
         PREFIX = c.split("=", 1)[1].strip()
     elif c == "--user":
         PREFIX = os.path.expanduser("~/.local")
+    else:
+        newargs.append(c)
+if not installing:
+    sys.argv = newargs
 
 # ==============================================================================
 # Variables
@@ -134,7 +140,7 @@ fh.close()
 dist = setup(
     # The following arguments will be included in the .egg.info file,
     # for a list of available arguments and their descriptions see:
-    # - http://docs.python.org/dist/module-distutils.core.html
+    # - https://docs.python.org/3/distutils/apiref.html#module-distutils.core
     name=name,
     version=version,
     description=description,
@@ -164,7 +170,7 @@ dist = setup(
 #
 
 # Make sure the icon cache is deleted and recreated
-if sys.argv[1] == "install":
+if installing:
 
     if os.uname()[0] != "Darwin":
         print("Running gtk-update-icon-cache")
