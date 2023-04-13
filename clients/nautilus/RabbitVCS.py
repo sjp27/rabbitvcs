@@ -27,7 +27,12 @@ Our module for everything related to the Nautilus extension.
 """
 from __future__ import with_statement
 from __future__ import absolute_import
-from rabbitvcs.util.contextmenuitems4 import *
+from rabbitvcs.util.contextmenu4 import (
+    MenuBuilder,
+    MainContextMenu,
+    SEPARATOR,
+    ContextMenuConditions,
+)
 import copy
 from rabbitvcs.services.checkerservice import StatusCheckerStub as StatusChecker
 import rabbitvcs.services.service
@@ -35,15 +40,10 @@ from rabbitvcs.util.settings import SettingsManager
 from rabbitvcs import version as EXT_VERSION
 from rabbitvcs import gettext, get_icon_path
 from rabbitvcs.util.log import Log, reload_log_settings
-import rabbitvcs.ui.property_page4
+from rabbitvcs.ui.property_page4 import FileInfo
 import rabbitvcs.ui
 from rabbitvcs.util.strings import S
-from rabbitvcs.util.contextmenu4 import (
-    MenuBuilder,
-    MainContextMenu,
-    SEPARATOR,
-    ContextMenuConditions,
-)
+
 from rabbitvcs.util.decorators import timeit, disable
 from rabbitvcs.util.helper import pretty_timedelta
 from rabbitvcs.util.helper import get_file_extension, get_common_directory
@@ -58,6 +58,7 @@ from os.path import isdir, isfile, realpath, basename, dirname
 import os.path
 import os
 from six.moves import range
+from gi.repository import Gio
 
 
 def log_all_exceptions(type, value, tb):
@@ -568,7 +569,7 @@ class RabbitVCS(
         else:
             log.debug("Path [%s] not found in file table" % status.path)
 
-    def get_property_pages(self, items):
+    def get_models(self, items):
         paths = []
 
         for item in items:
@@ -582,18 +583,33 @@ class RabbitVCS(
         if len(paths) == 0:
             return []
 
-        label = rabbitvcs.ui.property_page.PropertyPageLabel(
-            claim_domain=False
-        ).get_widget()
-        page = rabbitvcs.ui.property_page.PropertyPage(
-            paths, claim_domain=False
-        ).get_widget()
+        file_info = FileInfo(paths[0])
 
-        ppage = Nautilus.PropertyPage(
-            name="RabbitVCS::PropertyPage", label=label, page=page
+        section_model = Gio.ListStore.new(item_type=Nautilus.PropertiesItem)
+
+        section_model.append(
+            Nautilus.PropertiesItem(
+                name="Repo",
+                value=file_info.get_additional_info(),
+            )
         )
 
-        return [ppage]
+        # TODO add more file information
+        path_list = "\n".join(paths)
+        section_model.append(
+            Nautilus.PropertiesItem(
+                name="File(s)",
+                value=path_list,
+            )
+        )
+
+        return [
+            Nautilus.PropertiesModel(
+                title="RabbitVCS",
+                model=section_model,
+            ),
+        ]
+
 
 
 class NautilusContextMenu(MenuBuilder):
