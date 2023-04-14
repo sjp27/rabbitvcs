@@ -587,15 +587,26 @@ class RabbitVCS(
 
         section_model = Gio.ListStore.new(item_type=Nautilus.PropertiesItem)
 
+        repo_url, repo_path = file_info.get_additional_info()
         section_model.append(
             Nautilus.PropertiesItem(
                 name="Repo",
-                value=file_info.get_additional_info(),
+                value=repo_path,
             )
         )
 
-        # TODO add more file information
-        path_list = "\n".join(paths)
+        section_model.append(
+            Nautilus.PropertiesItem(
+                name="Upstream",
+                value=repo_url,
+            )
+        )
+
+        path_list = ""
+        for p in paths:
+            path_list += f"{p} [{S(file_info.get_status(p).simple_content_status()).display()}]\n"
+
+        path_list = path_list.strip()
         section_model.append(
             Nautilus.PropertiesItem(
                 name="File(s)",
