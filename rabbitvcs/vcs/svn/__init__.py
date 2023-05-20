@@ -1297,8 +1297,8 @@ class SVN(object):
                     )
 
                 copy_from_path = ""
-                if hasattr(changed_path, "copy_from_path"):
-                    copy_from_path = changed_path.copy_from_path
+                if hasattr(changed_path, "copyfrom_path"):
+                    copy_from_path = changed_path.copyfrom_path
 
                 changed_paths.append(
                     rabbitvcs.vcs.log.LogChangedPath(
