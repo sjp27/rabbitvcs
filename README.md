@@ -35,7 +35,7 @@ Recommends:
 
 For Debian-based distros you can run: 
 ```
-# apt-get install python-gtk3 python-configobj python-gobject python-gtkspellcheck python-svn subversion python-dulwich python-pygments git meld python-tk
+# apt-get install python3-configobj python3-gtkspellcheck python3-svn subversion python3-dulwich python3-pygments git meld python3-tk
 ```
 
 For Fedora-based distros you can run:
