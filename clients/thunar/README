@@ -10,6 +10,7 @@ Requirements:
     * thunar (>= v1.7)
     * thunarx-python (>= v0.5.0)
     * dbus-python (>= 0.80)
+    * gir1.2-thunarx-3.0
     * (all other RabbitVCS requirements)
 
 To install:
