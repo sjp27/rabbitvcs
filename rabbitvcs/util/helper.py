@@ -528,20 +528,10 @@ def launch_diff_tool(path1, path2=None):
     if path2 is not None:
         (lhs, rhs) = (path1, path2)
     else:
-        patch = os.popen("svn diff --diff-cmd 'diff' '%s'" % path1).read()
-
-        tmp_file = get_tmp_path("tmp.patch")
-        open(tmp_file, "w").write(patch)
-
         tmp_path = get_tmp_path(os.path.split(path1)[-1])
-        if os.path.isfile(path1):
-            shutil.copy(path1, tmp_path)
-        elif os.path.isdir(path1):
-            shutil.copytree(path1, tmp_path)
-        else:
-            return
-
-        os.popen("patch --reverse '%s' < %s" % (tmp_path, tmp_file))
+        os.popen(
+            "svn export --force -r BASE '%s' '%s'" % (path1, os.path.dirname(tmp_path))
+        )
         (lhs, rhs) = (tmp_path, path1)
 
     if diff["swap"]:
