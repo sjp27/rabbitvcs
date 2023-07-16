@@ -1897,7 +1897,7 @@ class GittyupClient(object):
                     if last_commitId != commit_line[1]:
                         revisions.append(revision)
                         revision = {}
-                    else:
+                    elif "message" in revision:
                         del revision["message"]
 
                 if len(fromPath) > 0:
