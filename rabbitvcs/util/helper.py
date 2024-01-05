@@ -990,7 +990,7 @@ def quote_url(url_text):
     )
     # netloc_quoted = quote(netloc)
     path_quoted = quote(path)
-    params_quoted = quote(query)
+    params_quoted = quote(params)
     query_quoted = quote_plus(query)
     fragment_quoted = quote(fragment)
 
@@ -1007,7 +1007,7 @@ def unquote_url(url_text):
     )
     # netloc_unquoted = unquote(netloc)
     path_unquoted = unquote(path)
-    params_unquoted = unquote(query)
+    params_unquoted = unquote(params)
     query_unquoted = unquote_plus(query)
     fragment_unquoted = unquote(fragment)
 
