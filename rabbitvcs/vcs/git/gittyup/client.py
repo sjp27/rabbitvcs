@@ -2173,7 +2173,7 @@ class GittyupClient(object):
             cmd.append("--%s" % type)
 
         cmd.append(revision)
-        if relative_path:
+        if relative_path and not "soft" == type and not "hard" == type:
             cmd.append(relative_path)
 
         try:
