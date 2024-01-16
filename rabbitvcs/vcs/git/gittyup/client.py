@@ -989,6 +989,8 @@ class GittyupClient(object):
 
         """
 
+        to_stage = []
+
         if isinstance(paths, (str, six.text_type)):
             paths = [paths]
 
@@ -996,11 +998,17 @@ class GittyupClient(object):
 
         for path in paths:
             relative_path = self.get_relative_path(path)
-            if relative_path in index:
-                del index[relative_path]
-                os.remove(path)
+            absolute_path = self.get_absolute_path(path)
 
-        index.write()
+            self.notify({
+                "action": "Deleted",
+                "path": absolute_path,
+                "mime_type": guess_type(absolute_path)[0]
+            })
+            os.remove(absolute_path)
+            to_stage.append(S(relative_path))
+
+        self.repo.stage(to_stage)
 
     def move(self, source, dest):
         """
