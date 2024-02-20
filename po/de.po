@@ -220,7 +220,7 @@ msgstr "Öffnen"
 
 #: ui/add.py:150 ui/lock.py:216 ui/commit.py:249
 msgid "Browse to"
-msgstr "Dursuchen"
+msgstr "Durchsuchen"
 
 #: ui/add.py:159 ui/commit.py:259 ui/glade/properties.glade.h:2
 #: lib/extensions/nautilus/RabbitVCS.py:735
@@ -567,7 +567,7 @@ msgstr "<b>Logmeldung hinzufügen</b>"
 
 #: ui/glade/commit.glade.h:2
 msgid "<b>Changed Files</b> (double-click to see diff)"
-msgstr "<b>Geänderte Dateien</b> (Doppelklick um Unterschiede anzuzeigen)"
+msgstr "<b>Geänderte Dateien</b> (Doppelklick, um Unterschiede anzuzeigen)"
 
 #: ui/glade/commit.glade.h:3
 msgid "<b>Commit to:</b>"
