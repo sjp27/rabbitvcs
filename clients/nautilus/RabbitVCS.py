@@ -27,79 +27,87 @@ Our module for everything related to the Nautilus extension.
 """
 from __future__ import with_statement
 from __future__ import absolute_import
+from rabbitvcs.util.contextmenu4 import (
+    MenuBuilder,
+    MainContextMenu,
+    SEPARATOR,
+    ContextMenuConditions,
+)
+import copy
+from rabbitvcs.services.checkerservice import StatusCheckerStub as StatusChecker
+import rabbitvcs.services.service
+from rabbitvcs.util.settings import SettingsManager
+from rabbitvcs import version as EXT_VERSION
+from rabbitvcs import gettext, get_icon_path
+from rabbitvcs.util.log import Log, reload_log_settings
+from rabbitvcs.ui.property_page4 import FileInfo
+import rabbitvcs.ui
+from rabbitvcs.util.strings import S
+
+from rabbitvcs.util.decorators import timeit, disable
+from rabbitvcs.util.helper import pretty_timedelta
+from rabbitvcs.util.helper import get_file_extension, get_common_directory
+from rabbitvcs.util.helper import launch_ui_window, launch_diff_tool
+import rabbitvcs.vcs.status
+from rabbitvcs.vcs import VCS
+import pysvn
+from gi.repository import Nautilus, GObject, Gtk, GdkPixbuf
+from rabbitvcs.util import helper
+import datetime
+from os.path import isdir, isfile, realpath, basename, dirname
+import os.path
+import os
 from six.moves import range
+from gi.repository import Gio
+
 
 def log_all_exceptions(type, value, tb):
-    import sys, traceback
+    import sys
+    import traceback
     from rabbitvcs.util.log import Log
-    log = Log("rabbitvcs.util.extensions.Nautilus.RabbitVCS")
-    log.exception_info("Error caught by master exception hook!",
-                       (type, value, tb))
 
-    text = ''.join(traceback.format_exception(type, value,
-                                              tb, limit=None))
+    log = Log("rabbitvcs.util.extensions.Nautilus.RabbitVCS")
+    log.exception_info("Error caught by master exception hook!", (type, value, tb))
+
+    text = "".join(traceback.format_exception(type, value, tb, limit=None))
 
     try:
         import rabbitvcs.ui.dialog
+
         rabbitvcs.ui.dialog.ErrorNotification(text)
     except Exception as ex:
-        log.exception("Additional exception when attempting"
-                      " to display error dialog.")
+        log.exception(
+            "Additional exception when attempting" " to display error dialog."
+        )
         log.exception(ex)
         raise
 
     sys.__excepthook__(type, value, tb)
 
+
 # import sys
 # sys.excepthook = log_all_exceptions
 
-import copy
-
-import os
-import os.path
-from os.path import isdir, isfile, realpath, basename, dirname
-import datetime
-
-from rabbitvcs.util import helper
 
 sa = helper.SanitizeArgv()
-from gi.repository import Nautilus, GObject, Gtk, GdkPixbuf
 sa.restore()
 
-import pysvn
 
-from rabbitvcs.vcs import VCS
-import rabbitvcs.vcs.status
-
-from rabbitvcs.util.helper import launch_ui_window, launch_diff_tool
-from rabbitvcs.util.helper import get_file_extension, get_common_directory
-from rabbitvcs.util.helper import pretty_timedelta
-
-from rabbitvcs.util.decorators import timeit, disable
-
-from rabbitvcs.util.contextmenu import MenuBuilder, MainContextMenu, SEPARATOR, ContextMenuConditions
-
-from rabbitvcs.util.strings import S
-
-import rabbitvcs.ui
-import rabbitvcs.ui.property_page
-
-from rabbitvcs.util.log import Log, reload_log_settings
 log = Log("rabbitvcs.util.extensions.Nautilus.RabbitVCS")
 
-from rabbitvcs import gettext, get_icon_path
 _ = gettext.gettext
 
-from rabbitvcs import version as EXT_VERSION
 
-from rabbitvcs.util.settings import SettingsManager
 settings = SettingsManager()
 
-import rabbitvcs.services.service
-from rabbitvcs.services.checkerservice import StatusCheckerStub as StatusChecker
 
-class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
-                 Nautilus.ColumnProvider, Nautilus.PropertyPageProvider, GObject.GObject):
+class RabbitVCS(
+    Nautilus.InfoProvider,
+    Nautilus.MenuProvider,
+    Nautilus.ColumnProvider,
+    Nautilus.PropertiesModelProvider,
+    GObject.GObject,
+):
     """
     This is the main class that implements all of our awesome features.
 
@@ -135,73 +143,6 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
         return item.get_location().get_path()
 
     def __init__(self):
-        factory = Gtk.IconFactory()
-
-        rabbitvcs_icons = [
-            "scalable/actions/rabbitvcs-cancel.svg",
-            "scalable/actions/rabbitvcs-ok.svg",
-            "scalable/actions/rabbitvcs-no.svg",
-            "scalable/actions/rabbitvcs-yes.svg",
-            "scalable/actions/rabbitvcs-settings.svg",
-            "scalable/actions/rabbitvcs-export.svg",
-            "scalable/actions/rabbitvcs-properties.svg",
-            "scalable/actions/rabbitvcs-editprops.svg",
-            "scalable/actions/rabbitvcs-show_log.svg",
-            "scalable/actions/rabbitvcs-delete.svg",
-            "scalable/actions/rabbitvcs-run.svg",
-            "scalable/actions/rabbitvcs-unlock.svg",
-            "scalable/actions/rabbitvcs-dbus.svg",
-            "scalable/actions/rabbitvcs-rename.svg",
-            "scalable/actions/rabbitvcs-help.svg",
-            "scalable/actions/rabbitvcs-update.svg",
-            "scalable/actions/rabbitvcs-diff.svg",
-            "scalable/actions/rabbitvcs-resolve.svg",
-            "scalable/actions/rabbitvcs-about.svg",
-            "scalable/actions/rabbitvcs-add.svg",
-            "scalable/actions/rabbitvcs-changes.svg",
-            "scalable/actions/rabbitvcs-createpatch.svg",
-            "scalable/actions/rabbitvcs-merge.svg",
-            "scalable/actions/rabbitvcs-drive.svg",
-            "scalable/actions/rabbitvcs-stop.svg",
-            "scalable/actions/rabbitvcs-checkout.svg",
-            "scalable/actions/rabbitvcs-import.svg",
-            "scalable/actions/rabbitvcs-branch.svg",
-            "scalable/actions/rabbitvcs-refresh.svg",
-            "scalable/actions/rabbitvcs-editconflicts.svg",
-            "scalable/actions/rabbitvcs-monkey.svg",
-            "scalable/actions/rabbitvcs-applypatch.svg",
-            "scalable/actions/rabbitvcs-switch.svg",
-            "scalable/actions/rabbitvcs-lock.svg",
-            "scalable/actions/rabbitvcs-annotate.svg",
-            "scalable/actions/rabbitvcs-compare.svg",
-            "scalable/actions/rabbitvcs-revert.svg",
-            "scalable/actions/rabbitvcs-bug.svg",
-            "scalable/actions/rabbitvcs-cleanup.svg",
-            "scalable/actions/rabbitvcs-clear.svg",
-            "scalable/actions/rabbitvcs-unstage.svg",
-            "scalable/actions/rabbitvcs-emblems.svg",
-            "scalable/actions/rabbitvcs-relocate.svg",
-            "scalable/actions/rabbitvcs-reset.svg",
-            "scalable/actions/rabbitvcs-asynchronous.svg",
-            "scalable/actions/rabbitvcs-commit.svg",
-            "scalable/actions/rabbitvcs-checkmods.svg",
-            "scalable/apps/rabbitvcs.svg",
-            "scalable/apps/rabbitvcs-small.svg",
-            "16x16/actions/rabbitvcs-push.png"
-        ]
-
-        rabbitvcs_icon_path = get_icon_path()
-        for rel_icon_path in rabbitvcs_icons:
-            icon_path = "%s/%s" % (rabbitvcs_icon_path, rel_icon_path)
-            file = os.path.basename(rel_icon_path)
-            (root, ext) = os.path.splitext(file)
-
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file(icon_path)
-            iconset = Gtk.IconSet.new_from_pixbuf(pixbuf)
-            factory.add(root, iconset)
-
-        factory.add_default()
-
         # Create a global client we can use to do VCS related stuff
         self.vcs_client = VCS()
 
@@ -210,6 +151,9 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
         self.status_checker.assert_version(EXT_VERSION)
 
         self.items_cache = {}
+
+        # Keep track of the emblems that we changed, to prevent double update requests
+        self.emblem_mod_cache = {}
 
     def get_columns(self):
         """
@@ -222,26 +166,26 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
                 name="RabbitVCS::status_column",
                 attribute="status",
                 label=_("RVCS Status"),
-                description=""
+                description="",
             ),
             Nautilus.Column(
                 name="RabbitVCS::revision_column",
                 attribute="revision",
                 label=_("RVCS Revision"),
-                description=""
+                description="",
             ),
             Nautilus.Column(
                 name="RabbitVCS::author_column",
                 attribute="author",
                 label=_("RVCS Author"),
-                description=""
+                description="",
             ),
             Nautilus.Column(
                 name="RabbitVCS::age_column",
                 attribute="age",
                 label=_("RVCS Age"),
-                description=""
-            )
+                description="",
+            ),
         )
 
     def update_file_info(self, item):
@@ -266,9 +210,11 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
         enable_emblems = bool(int(settings.get("general", "enable_emblems")))
         enable_attrs = bool(int(settings.get("general", "enable_attributes")))
 
-        if not (enable_emblems or enable_attrs): return Nautilus.OperationResult.COMPLETE
+        if not (enable_emblems or enable_attrs):
+            return Nautilus.OperationResult.COMPLETE
 
-        if not self.valid_uri(item.get_uri()): return Nautilus.OperationResult.FAILED
+        if not self.valid_uri(item.get_uri()):
+            return Nautilus.OperationResult.FAILED
 
         path = self.get_local_path(item)
 
@@ -288,7 +234,8 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
         # when we remove this line (detected as working copies, even though
         # they are not)? That shouldn't happen.
         is_in_a_or_a_working_copy = self.vcs_client.is_in_a_or_a_working_copy(path)
-        if not is_in_a_or_a_working_copy: return Nautilus.OperationResult.COMPLETE
+        if not is_in_a_or_a_working_copy:
+            return Nautilus.OperationResult.COMPLETE
 
         # Do our magic...
 
@@ -302,24 +249,28 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
         # Need to catch exception
         for idx in range(len(self.statuses_from_callback)):
             found = (self.statuses_from_callback[idx].path) == path
-            if found: break
+            if found:
+                break
 
-        if found: # We're here because we were triggered by a callback
+        if found:  # We're here because we were triggered by a callback
             status = self.statuses_from_callback[idx]
             del self.statuses_from_callback[idx]
 
         # Don't bother the checker if we already have the info from a callback
         if not found:
-            status = \
-                self.status_checker.check_status(path,
-                                                 recurse=True,
-                                                 summary=True,
-                                                 callback=self.cb_status,
-                                                 invalidate=invalidate)
+            status = self.status_checker.check_status(
+                path,
+                recurse=True,
+                summary=True,
+                callback=self.cb_status,
+                invalidate=invalidate,
+            )
 
         # FIXME: when did this get disabled?
-        if enable_attrs: self.update_columns(item, path, status)
-        if enable_emblems: self.update_status(item, path, status)
+        if enable_attrs:
+            self.update_columns(item, path, status)
+        if enable_emblems:
+            self.update_status(item, path, status)
 
         return Nautilus.OperationResult.COMPLETE
 
@@ -338,8 +289,7 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
         age = ""
         if status.date:
             age = pretty_timedelta(
-                datetime.datetime.fromtimestamp(status.date),
-                datetime.datetime.now()
+                datetime.datetime.fromtimestamp(status.date), datetime.datetime.now()
             )
 
         author = ""
@@ -350,7 +300,7 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
             "status": status.simple_content_status(),
             "revision": revision,
             "author": author,
-            "age": age
+            "age": age,
         }
 
         for key, value in list(values.items()):
@@ -358,13 +308,15 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
 
     def update_status(self, item, path, status):
         if status.summary in rabbitvcs.ui.STATUS_EMBLEMS:
+            # log.error ("Add emblem"+path)
+            self.emblem_mod_cache[path] = True
             item.add_emblem(rabbitvcs.ui.STATUS_EMBLEMS[status.summary])
 
-    #~ @disable
+    # ~ @disable
     # @timeit
     # FIXME: this is a bottleneck. See generate_statuses() in
     # MainContextMenuConditions.
-    def get_file_items_full(self, provider, window, items):
+    def get_file_items_full(self, provider, items):
         """
         Menu activated with items selected. Nautilus also calls this function
         when rendering submenus, even though this is not needed since the entire
@@ -372,9 +324,6 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
 
         Note that calling C{nautilusVFSFile.invalidate_extension_info()} will
         also cause get_file_items to be called.
-
-        @type   window: NautilusNavigationWindow
-        @param  window:
 
         @type   items:  list of NautilusVFSFile
         @param  items:
@@ -391,7 +340,8 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
                 paths.append(path)
                 self.VFSFile_table[path] = item
 
-        if len(paths) == 0: return []
+        if len(paths) == 0:
+            return []
 
         # log.debug("get_file_items_full() called")
 
@@ -403,45 +353,46 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
             conditions_dict = self.items_cache[paths_str]
             if conditions_dict and conditions_dict != "in-progress":
                 conditions = NautilusMenuConditions(conditions_dict)
-                menu = NautilusMainContextMenu(self, base_dir, paths, conditions).get_menu()
+                menu = NautilusMainContextMenu(
+                    self, base_dir, paths, conditions
+                ).get_menu()
                 return menu
 
         if conditions_dict != "in-progress":
-            self.status_checker.generate_menu_conditions_async(provider, base_dir, paths, self.update_file_items)
+            self.status_checker.generate_menu_conditions_async(
+                provider, base_dir, paths, self.update_file_items
+            )
             self.items_cache[path] = "in-progress"
 
         return ()
 
     def update_file_items(self, provider, base_dir, paths, conditions_dict):
         paths_str = "-".join(paths)
-        self.items_cache[paths_str] =  conditions_dict
+        self.items_cache[paths_str] = conditions_dict
         Nautilus.MenuProvider.emit_items_updated_signal(provider)
 
-    #~ @disable
+    # ~ @disable
     # This is useful for profiling. Rename it to "get_background_items" and then
     # rename the real function "get_background_items_real".
-    def get_background_items_profile(self, window, item):
+    def get_background_items_profile(self, item):
         import cProfile
 
         path = S(gnomevfs.get_local_path_from_uri(item.get_uri())).replace("/", ":")
 
         profile_data_file = os.path.join(
-                               helper.get_home_folder(),
-                               "checkerservice_%s.stats" % path)
+            helper.get_home_folder(), "checkerservice_%s.stats" % path
+        )
 
         prof = cProfile.Profile()
-        retval = prof.runcall(self.get_background_items_real, window, item)
+        retval = prof.runcall(self.get_background_items_real, item)
         prof.dump_stats(profile_data_file)
         log.debug("Dumped: %s" % profile_data_file)
         return retval
 
-    def get_background_items_full(self, provider, window, item):
+    def get_background_items_full(self, provider, item):
         """
         Menu activated on entering a directory. Builds context menu for File
         menu and for window background.
-
-        @type   window: NautilusNavigationWindow
-        @param  window:
 
         @type   item:   NautilusVFSFile
         @param  item:
@@ -456,25 +407,34 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
         path = self.get_local_path(item)
         self.VFSFile_table[path] = item
 
-        # log.debug("get_background_items_full() called")
+        # Early exit when we are already waiting for new info on a path
+        if path in self.items_cache and self.items_cache[path] == "in-progress":
+            log.error("Sceduled task already pending, exit early, in progress")
+            return ()
 
         # Schedule menu conditions computation for directory contents.
         for file in os.listdir(path):
             subpath = os.path.join(path, file)
             if not subpath in self.items_cache:
                 self.items_cache[subpath] = "in-progress"
-                self.status_checker.generate_menu_conditions_async(provider, path, [subpath], self.update_background_items)
+                self.status_checker.generate_menu_conditions_async(
+                    provider, path, [subpath], self.update_background_items
+                )
 
         conditions_dict = None
         if path in self.items_cache:
             conditions_dict = self.items_cache[path]
             if conditions_dict and conditions_dict != "in-progress":
                 conditions = NautilusMenuConditions(conditions_dict)
-                menu = NautilusMainContextMenu(self, path, [path], conditions).get_menu()
+                menu = NautilusMainContextMenu(
+                    self, path, [path], conditions
+                ).get_menu()
                 return menu
 
         if conditions_dict != "in-progress":
-            self.status_checker.generate_menu_conditions_async(provider, path, [path], self.update_background_items)
+            self.status_checker.generate_menu_conditions_async(
+                provider, path, [path], self.update_background_items
+            )
             self.items_cache[path] = "in-progress"
 
         return ()
@@ -482,7 +442,7 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
     def update_background_items(self, provider, base_dir, paths, conditions_dict):
         paths_str = "-".join(paths)
         conditions = NautilusMenuConditions(conditions_dict)
-        self.items_cache[paths_str] =  conditions_dict
+        self.items_cache[paths_str] = conditions_dict
         Nautilus.MenuProvider.emit_items_updated_signal(provider)
 
     #
@@ -498,7 +458,8 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
 
         """
 
-        if not uri.startswith("file://"): return False
+        if not uri.startswith("file://"):
+            return False
 
         return True
 
@@ -507,7 +468,6 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
     #
 
     def rescan_after_process_exit(self, proc, paths):
-
         def do_check():
             # We'll check the paths first (these were the paths that
             # were originally passed along to the context menu).
@@ -518,16 +478,17 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
             #
             for path in paths:
                 # We're not interested in the result now, just the callback
-                self.status_checker.check_status(path,
-                                                 recurse=True,
-                                                 invalidate=True,
-                                                 callback=self.cb_status,
-                                                 summary=True)
+                self.status_checker.check_status(
+                    path,
+                    recurse=True,
+                    invalidate=True,
+                    callback=self.cb_status,
+                    summary=True,
+                )
 
         self.execute_after_process_exit(proc, do_check)
 
     def execute_after_process_exit(self, proc, func=None):
-
         def is_process_still_alive():
             log.debug("is_process_still_alive() for pid: %i" % proc.pid)
             # First we need to see if the commit process is still running
@@ -536,7 +497,7 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
 
             log.debug("%s" % retval)
 
-            still_going = (retval is None)
+            still_going = retval is None
 
             if not still_going and callable(func):
                 func()
@@ -561,11 +522,12 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
 
         def do_reload_settings():
             globals()["settings"] = SettingsManager()
-            globals()["log"] = reload_log_settings()("rabbitvcs.util.extensions.nautilus")
+            globals()["log"] = reload_log_settings()(
+                "rabbitvcs.util.extensions.nautilus"
+            )
             log.debug("Re-scanning settings")
 
         self.execute_after_process_exit(proc, do_reload_settings)
-
 
     #
     # Callbacks
@@ -597,11 +559,17 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
             # invalidate_extension_info() - beware recursion!
             item.invalidate_extension_info()
             if status.path in self.items_cache:
-                del self.items_cache[status.path]
+                # Prevent invalidating the item_cache because the emblem changed
+                # If we don't do this, all version control items in a directory are double scanned
+                if status.path in self.emblem_mod_cache:
+                    del self.emblem_mod_cache[status.path]
+                else:
+                    # log.error ("Remove path from cache: "+status.path)
+                    del self.items_cache[status.path]
         else:
             log.debug("Path [%s] not found in file table" % status.path)
 
-    def get_property_pages(self, items):
+    def get_models(self, items):
         paths = []
 
         for item in items:
@@ -612,18 +580,48 @@ class RabbitVCS(Nautilus.InfoProvider, Nautilus.MenuProvider,
                     paths.append(path)
                     self.VFSFile_table[path] = item
 
-        if len(paths) == 0: return []
+        if len(paths) == 0:
+            return []
 
-        label = rabbitvcs.ui.property_page.PropertyPageLabel(claim_domain=False).get_widget()
-        page = rabbitvcs.ui.property_page.PropertyPage(paths, claim_domain=False).get_widget()
+        file_info = FileInfo(paths[0])
 
-        ppage = Nautilus.PropertyPage(name='RabbitVCS::PropertyPage',
-            label=label,
-            page=page)
+        section_model = Gio.ListStore.new(item_type=Nautilus.PropertiesItem)
 
-        return [ppage]
+        repo_url, repo_path = file_info.get_additional_info()
+        section_model.append(
+            Nautilus.PropertiesItem(
+                name="Repo",
+                value=repo_path,
+            )
+        )
 
-from rabbitvcs.util.contextmenuitems import *
+        section_model.append(
+            Nautilus.PropertiesItem(
+                name="Upstream",
+                value=repo_url,
+            )
+        )
+
+        path_list = ""
+        for p in paths:
+            path_list += f"{p} [{S(file_info.get_status(p).simple_content_status()).display()}]\n"
+
+        path_list = path_list.strip()
+        section_model.append(
+            Nautilus.PropertiesItem(
+                name="File(s)",
+                value=path_list,
+            )
+        )
+
+        return [
+            Nautilus.PropertiesModel(
+                title="RabbitVCS",
+                model=section_model,
+            ),
+        ]
+
+
 
 class NautilusContextMenu(MenuBuilder):
     """
@@ -644,9 +642,11 @@ class NautilusContextMenu(MenuBuilder):
     def top_level_menu(self, items):
         return items
 
+
 class NautilusMenuConditions(ContextMenuConditions):
     def __init__(self, path_dict):
         self.path_dict = path_dict
+
 
 class NautilusMainContextMenu(MainContextMenu):
     def get_menu(self):

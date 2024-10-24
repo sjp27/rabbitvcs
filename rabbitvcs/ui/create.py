@@ -1,4 +1,9 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+from rabbitvcs.ui.action import GitAction
+import rabbitvcs.ui.dialog
+from gi.repository import Gtk, GObject, Gdk
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -27,16 +32,14 @@ import subprocess
 from rabbitvcs.util import helper
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk
 sa.restore()
 
-import rabbitvcs.ui.dialog
-from rabbitvcs.ui.action import GitAction
 
-from rabbitvcs import gettext
 _ = gettext.gettext
+
 
 class SVNCreate(object):
     """
@@ -46,7 +49,6 @@ class SVNCreate(object):
     # Also, might want to just launch a terminal window instead of this
     def __init__(self, path):
 
-
         if not os.path.isdir(path):
             os.makedirs(path)
 
@@ -55,7 +57,12 @@ class SVNCreate(object):
         if ret == 0:
             rabbitvcs.ui.dialog.MessageBox(_("Repository successfully created"))
         else:
-            rabbitvcs.ui.dialog.MessageBox(_("There was an error creating the repository.  Make sure the given folder is empty."))
+            rabbitvcs.ui.dialog.MessageBox(
+                _(
+                    "There was an error creating the repository.  Make sure the given folder is empty."
+                )
+            )
+
 
 class GitCreate(object):
     # Also, might want to just launch a terminal window instead of this
@@ -64,10 +71,7 @@ class GitCreate(object):
         self.git = self.vcs.git()
         self.path = path
 
-        self.action = GitAction(
-            self.git,
-            register_gtk_quit=True
-        )
+        self.action = GitAction(self.git, register_gtk_quit=True)
 
         self.action.append(self.action.set_header, _("Initialize Repository"))
         self.action.append(self.action.set_status, _("Setting up repository..."))
@@ -76,15 +80,16 @@ class GitCreate(object):
         self.action.append(self.action.finish)
         self.action.schedule()
 
-classes_map = {
-    rabbitvcs.vcs.VCS_SVN: SVNCreate,
-    rabbitvcs.vcs.VCS_GIT: GitCreate
-}
+
+classes_map = {rabbitvcs.vcs.VCS_SVN: SVNCreate, rabbitvcs.vcs.VCS_GIT: GitCreate}
 
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main, VCS_OPT, VCS_OPT_ERROR
-    (options, paths) = main([VCS_OPT], usage="Usage: rabbitvcs create --vcs [svn|git] path")
+
+    (options, paths) = main(
+        [VCS_OPT], usage="Usage: rabbitvcs create --vcs [svn|git] path"
+    )
     if options.vcs:
         window = classes_map[options.vcs](paths[0])
         if options.vcs == rabbitvcs.vcs.VCS_GIT:

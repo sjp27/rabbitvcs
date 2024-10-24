@@ -1,4 +1,11 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+import rabbitvcs.vcs
+from rabbitvcs.ui.dialog import MessageBox, OneLineTextChange
+from rabbitvcs.ui.action import SVNAction
+from rabbitvcs.ui import InterfaceNonView
+from gi.repository import Gtk, GObject, Gdk
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -26,18 +33,14 @@ import os.path
 from rabbitvcs.util import helper
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk
 sa.restore()
 
-from rabbitvcs.ui import InterfaceNonView
-from rabbitvcs.ui.action import SVNAction
-from rabbitvcs.ui.dialog import MessageBox, OneLineTextChange
-import rabbitvcs.vcs
 
-from rabbitvcs import gettext
 _ = gettext.gettext
+
 
 class Rename(InterfaceNonView):
     DO_RENAME = False
@@ -68,6 +71,7 @@ class Rename(InterfaceNonView):
         self.new_path = new_path
         self.DO_RENAME = True
 
+
 class SVNRename(Rename):
     def __init__(self, path):
         Rename.__init__(self, path)
@@ -78,8 +82,7 @@ class SVNRename(Rename):
         self.svn = self.vcs.svn()
 
         self.action = rabbitvcs.ui.action.SVNAction(
-            self.svn,
-            register_gtk_quit=self.gtk_quit_is_set()
+            self.svn, register_gtk_quit=self.gtk_quit_is_set()
         )
 
         dirname = os.path.dirname(self.new_path)
@@ -89,15 +92,12 @@ class SVNRename(Rename):
 
         self.action.append(self.action.set_header, _("Rename"))
         self.action.append(self.action.set_status, _("Running Rename Command..."))
-        self.action.append(
-            self.svn.move,
-            self.path,
-            self.new_path
-        )
+        self.action.append(self.svn.move, self.path, self.new_path)
         self.action.append(self.action.set_status, _("Completed Rename"))
         self.action.append(self.action.finish)
         self.action.append(self.close)
         self.action.schedule()
+
 
 class GitRename(Rename):
     def __init__(self, path):
@@ -109,8 +109,7 @@ class GitRename(Rename):
         self.git = self.vcs.git(path)
 
         self.action = rabbitvcs.ui.action.GitAction(
-            self.git,
-            register_gtk_quit=self.gtk_quit_is_set()
+            self.git, register_gtk_quit=self.gtk_quit_is_set()
         )
         dirname = os.path.dirname(os.path.realpath(self.new_path))
         if not os.path.exists(dirname):
@@ -118,20 +117,15 @@ class GitRename(Rename):
 
         self.action.append(self.action.set_header, _("Rename"))
         self.action.append(self.action.set_status, _("Running Rename Command..."))
-        self.action.append(
-            self.git.move,
-            self.path,
-            self.new_path
-        )
+        self.action.append(self.git.move, self.path, self.new_path)
         self.action.append(self.action.set_status, _("Completed Rename"))
         self.action.append(self.action.finish)
         self.action.append(self.close)
         self.action.schedule()
 
-classes_map = {
-    rabbitvcs.vcs.VCS_SVN: SVNRename,
-    rabbitvcs.vcs.VCS_GIT: GitRename
-}
+
+classes_map = {rabbitvcs.vcs.VCS_SVN: SVNRename, rabbitvcs.vcs.VCS_GIT: GitRename}
+
 
 def rename_factory(path):
     guess = rabbitvcs.vcs.guess(path)
@@ -140,6 +134,7 @@ def rename_factory(path):
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main
+
     (options, paths) = main(usage="Usage: rabbitvcs rename [path]")
 
     window = rename_factory(os.path.abspath(paths[0]))

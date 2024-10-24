@@ -1,4 +1,11 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+import rabbitvcs.ui.dialog
+import rabbitvcs.ui.widget
+from rabbitvcs.ui.action import SVNAction, GitAction
+from rabbitvcs.ui import InterfaceNonView, InterfaceView
+from gi.repository import Gtk, GObject, Gdk
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -24,18 +31,14 @@ from __future__ import absolute_import
 from rabbitvcs.util import helper
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk
 sa.restore()
 
-from rabbitvcs.ui import InterfaceNonView, InterfaceView
-from rabbitvcs.ui.action import SVNAction, GitAction
-import rabbitvcs.ui.widget
-import rabbitvcs.ui.dialog
 
-from rabbitvcs import gettext
 _ = gettext.gettext
+
 
 class SVNUpdate(InterfaceNonView):
     """
@@ -52,9 +55,7 @@ class SVNUpdate(InterfaceNonView):
 
     def start(self):
         self.action = SVNAction(
-            self.svn,
-            register_gtk_quit=self.gtk_quit_is_set(),
-            run_in_thread=False
+            self.svn, register_gtk_quit=self.gtk_quit_is_set(), run_in_thread=False
         )
         self.action.append(self.action.set_header, _("Update"))
         self.action.append(self.action.set_status, _("Updating..."))
@@ -62,6 +63,7 @@ class SVNUpdate(InterfaceNonView):
         self.action.append(self.action.set_status, _("Completed Update"))
         self.action.append(self.action.finish)
         self.action.schedule()
+
 
 class GitUpdate(InterfaceView):
     """
@@ -79,13 +81,16 @@ class GitUpdate(InterfaceView):
         self.git = self.vcs.git(paths[0])
 
         self.repository_selector = rabbitvcs.ui.widget.GitRepositorySelector(
-            self.get_widget("repository_container"),
-            self.git
+            self.get_widget("repository_container"), self.git
         )
 
     def on_apply_changes_toggled(self, widget, data=None):
-        self.get_widget("merge").set_sensitive(self.get_widget("apply_changes").get_active())
-        self.get_widget("rebase").set_sensitive(self.get_widget("apply_changes").get_active())
+        self.get_widget("merge").set_sensitive(
+            self.get_widget("apply_changes").get_active()
+        )
+        self.get_widget("rebase").set_sensitive(
+            self.get_widget("apply_changes").get_active()
+        )
 
     def on_ok_clicked(self, widget, data=None):
         self.hide()
@@ -101,9 +106,7 @@ class GitUpdate(InterfaceView):
         fetch_all = self.get_widget("all").get_active()
 
         self.action = GitAction(
-            self.git,
-            register_gtk_quit=self.gtk_quit_is_set(),
-            run_in_thread=False
+            self.git, register_gtk_quit=self.gtk_quit_is_set(), run_in_thread=False
         )
         self.action.append(self.action.set_header, _("Update"))
         self.action.append(self.action.set_status, _("Updating..."))
@@ -129,10 +132,8 @@ class GitUpdate(InterfaceView):
         self.action.schedule()
 
 
-classes_map = {
-    rabbitvcs.vcs.VCS_SVN: SVNUpdate,
-    rabbitvcs.vcs.VCS_GIT: GitUpdate
-}
+classes_map = {rabbitvcs.vcs.VCS_SVN: SVNUpdate, rabbitvcs.vcs.VCS_GIT: GitUpdate}
+
 
 def update_factory(paths):
     guess = rabbitvcs.vcs.guess(paths[0])
@@ -141,6 +142,7 @@ def update_factory(paths):
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main
+
     (options, paths) = main(usage="Usage: rabbitvcs update [path1] [path2] ...")
 
     window = update_factory(paths)

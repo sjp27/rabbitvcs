@@ -1,4 +1,16 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+import rabbitvcs.vcs
+from rabbitvcs.util.log import Log
+from rabbitvcs.util.strings import S
+import rabbitvcs.ui.action
+import rabbitvcs.ui.dialog
+import rabbitvcs.ui.widget
+from rabbitvcs.ui.action import SVNAction
+from rabbitvcs.ui.add import Add
+from rabbitvcs.ui import InterfaceView
+from gi.repository import Gtk, GObject, Gdk
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -26,26 +38,16 @@ import six.moves._thread
 from rabbitvcs.util import helper
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk
 sa.restore()
 
-from rabbitvcs.ui import InterfaceView
-from rabbitvcs.ui.add import Add
-from rabbitvcs.ui.action import SVNAction
-import rabbitvcs.ui.widget
-import rabbitvcs.ui.dialog
-import rabbitvcs.ui.action
-from rabbitvcs.util.strings import S
-from rabbitvcs.util.log import Log
-
-import rabbitvcs.vcs
 
 log = Log("rabbitvcs.ui.stage")
 
-from rabbitvcs import gettext
 _ = gettext.gettext
+
 
 class GitStage(Add):
     def setup(self, window, columns):
@@ -56,12 +58,9 @@ class GitStage(Add):
     def populate_files_table(self):
         self.files_table.clear()
         for item in self.items:
-            self.files_table.append([
-                True,
-                S(item.path),
-                item.path,
-                helper.get_file_extension(item.path)
-            ])
+            self.files_table.append(
+                [True, S(item.path), item.path, helper.get_file_extension(item.path)]
+            )
 
     def on_ok_clicked(self, widget):
         items = self.files_table.get_activated_rows(1)
@@ -71,8 +70,7 @@ class GitStage(Add):
         self.hide()
 
         self.action = rabbitvcs.ui.action.GitAction(
-            self.git,
-            register_gtk_quit=self.gtk_quit_is_set()
+            self.git, register_gtk_quit=self.gtk_quit_is_set()
         )
 
         self.action.append(self.action.set_header, _("Stage"))
@@ -83,26 +81,22 @@ class GitStage(Add):
         self.action.append(self.action.finish)
         self.action.schedule()
 
+
 class GitStageQuiet(object):
     def __init__(self, paths, base_dir=None):
         self.vcs = rabbitvcs.vcs.VCS()
         self.git = self.vcs.git(paths[0])
-        self.action = rabbitvcs.ui.action.GitAction(
-            self.git,
-            run_in_thread=False
-        )
+        self.action = rabbitvcs.ui.action.GitAction(self.git, run_in_thread=False)
 
         for path in paths:
             self.action.append(self.git.stage, path)
         self.action.schedule()
 
-classes_map = {
-    rabbitvcs.vcs.VCS_GIT: GitStage
-}
 
-quiet_classes_map = {
-    rabbitvcs.vcs.VCS_GIT: GitStageQuiet
-}
+classes_map = {rabbitvcs.vcs.VCS_GIT: GitStage}
+
+quiet_classes_map = {rabbitvcs.vcs.VCS_GIT: GitStageQuiet}
+
 
 def stage_factory(classes_map, paths, base_dir=None):
     guess = rabbitvcs.vcs.guess(paths[0])
@@ -111,9 +105,9 @@ def stage_factory(classes_map, paths, base_dir=None):
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main, BASEDIR_OPT, QUIET_OPT
+
     (options, paths) = main(
-        [BASEDIR_OPT, QUIET_OPT],
-        usage="Usage: rabbitvcs stage [path1] [path2] ..."
+        [BASEDIR_OPT, QUIET_OPT], usage="Usage: rabbitvcs stage [path1] [path2] ..."
     )
 
     if options.quiet:

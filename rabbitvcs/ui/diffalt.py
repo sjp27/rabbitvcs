@@ -1,4 +1,13 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+from rabbitvcs.util.log import Log
+from rabbitvcs.util.strings import S
+from rabbitvcs.ui.action import SVNAction, GitAction
+import rabbitvcs.vcs
+from rabbitvcs.ui import InterfaceView
+from rabbitvcs import TEMP_DIR_PREFIX
+from gi.repository import Gtk, GObject, Gdk, GLib
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -30,10 +39,8 @@ from rabbitvcs.util import helper
 from gi import require_version
 require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk, GLib
 sa.restore()
 
-from rabbitvcs.ui import InterfaceView
 from rabbitvcs.util.contextmenu import GtkFilesContextMenu, GtkContextMenuCaller
 import rabbitvcs.ui.action
 import rabbitvcs.ui.widget
@@ -319,7 +326,7 @@ if __name__ == "__main__":
     from rabbitvcs.ui import main, BASEDIR_OPT
     (options, paths) = main(
         [BASEDIR_OPT],
-        usage="Usage: rabbitvcs diffalt [path1] [path2] ..."
+        usage="Usage: rabbitvcs diffalt [path1] [path2] ...",
     )
 
     window = diffalt_factory(paths, options.base_dir)

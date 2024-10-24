@@ -26,6 +26,8 @@ UI layer.
 
 """
 from __future__ import absolute_import
+import rabbitvcs.vcs.status
+from rabbitvcs import APP_NAME, LOCALE_DIR, gettext
 
 import os
 from six.moves import range
@@ -33,49 +35,55 @@ from six.moves import range
 from rabbitvcs.util import helper
 
 import gi
-gi.require_version("Gtk", "3.0")
-sa = helper.SanitizeArgv()
+
+try:
+    gi.require_version("Gtk", "3.0")
+except:
+    gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gdk, GLib
+sa = helper.SanitizeArgv()
 sa.restore()
 
-from rabbitvcs import APP_NAME, LOCALE_DIR, gettext
 _ = gettext.gettext
 
-import rabbitvcs.vcs.status
 
-REVISION_OPT = (["-r", "--revision"], {"help":"specify the revision number"})
+REVISION_OPT = (["-r", "--revision"], {"help": "specify the revision number"})
 BASEDIR_OPT = (["-b", "--base-dir"], {})
-QUIET_OPT = (["-q", "--quiet"], {
-    "help":     "Run the add command quietly, with no UI.",
-    "action":   "store_true",
-    "default":  False
-})
-VCS_OPT = (["--vcs"], {"help":"specify the version control system"})
+QUIET_OPT = (
+    ["-q", "--quiet"],
+    {
+        "help": "Run the add command quietly, with no UI.",
+        "action": "store_true",
+        "default": False,
+    },
+)
+VCS_OPT = (["--vcs"], {"help": "specify the version control system"})
 
-VCS_OPT_ERROR = _("You must specify a version control system using the --vcs [svn|git] option")
+VCS_OPT_ERROR = _(
+    "You must specify a version control system using the --vcs [svn|git] option"
+)
 
 #: Maps statuses to emblems.
 STATUS_EMBLEMS = {
-    rabbitvcs.vcs.status.status_normal : "rabbitvcs-normal",
-    rabbitvcs.vcs.status.status_modified : "rabbitvcs-modified",
-    rabbitvcs.vcs.status.status_added : "rabbitvcs-added",
-    rabbitvcs.vcs.status.status_deleted : "rabbitvcs-deleted",
-    rabbitvcs.vcs.status.status_ignored :"rabbitvcs-ignored",
-    rabbitvcs.vcs.status.status_read_only : "rabbitvcs-locked",
-    rabbitvcs.vcs.status.status_locked : "rabbitvcs-locked",
-    rabbitvcs.vcs.status.status_unknown : "rabbitvcs-unknown",
-    rabbitvcs.vcs.status.status_missing : "rabbitvcs-complicated",
-    rabbitvcs.vcs.status.status_replaced : "rabbitvcs-modified",
-    rabbitvcs.vcs.status.status_complicated : "rabbitvcs-complicated",
-    rabbitvcs.vcs.status.status_calculating : "rabbitvcs-calculating",
-    rabbitvcs.vcs.status.status_error : "rabbitvcs-error",
-    rabbitvcs.vcs.status.status_unversioned : "rabbitvcs-unversioned"
+    rabbitvcs.vcs.status.status_normal: "rabbitvcs-normal",
+    rabbitvcs.vcs.status.status_modified: "rabbitvcs-modified",
+    rabbitvcs.vcs.status.status_added: "rabbitvcs-added",
+    rabbitvcs.vcs.status.status_deleted: "rabbitvcs-deleted",
+    rabbitvcs.vcs.status.status_ignored: "rabbitvcs-ignored",
+    rabbitvcs.vcs.status.status_read_only: "rabbitvcs-locked",
+    rabbitvcs.vcs.status.status_locked: "rabbitvcs-locked",
+    rabbitvcs.vcs.status.status_unknown: "rabbitvcs-unknown",
+    rabbitvcs.vcs.status.status_missing: "rabbitvcs-complicated",
+    rabbitvcs.vcs.status.status_replaced: "rabbitvcs-modified",
+    rabbitvcs.vcs.status.status_complicated: "rabbitvcs-complicated",
+    rabbitvcs.vcs.status.status_calculating: "rabbitvcs-calculating",
+    rabbitvcs.vcs.status.status_error: "rabbitvcs-error",
+    rabbitvcs.vcs.status.status_unversioned: "rabbitvcs-unversioned",
 }
 
-class GtkBuilderWidgetWrapper(object):
 
-    def __init__(self, gtkbuilder_filename = None,
-                 gtkbuilder_id = None, claim_domain=True):
+class GtkBuilderWidgetWrapper(object):
+    def __init__(self, gtkbuilder_filename=None, gtkbuilder_id=None, claim_domain=True):
         if gtkbuilder_filename:
             self.gtkbuilder_filename = gtkbuilder_filename
 
@@ -90,7 +98,7 @@ class GtkBuilderWidgetWrapper(object):
     def get_tree(self):
         path = "%s/xml/%s.xml" % (
             os.path.dirname(os.path.realpath(__file__)),
-            self.gtkbuilder_filename
+            self.gtkbuilder_filename,
         )
 
         tree = Gtk.Builder()
@@ -101,11 +109,12 @@ class GtkBuilderWidgetWrapper(object):
 
         return tree
 
-    def get_widget(self, id = None):
+    def get_widget(self, id=None):
         if not id:
             id = self.gtkbuilder_id
 
         return self.tree.get_object(id)
+
 
 class InterfaceView(GtkBuilderWidgetWrapper):
     """
@@ -127,23 +136,27 @@ class InterfaceView(GtkBuilderWidgetWrapper):
         # when a launched (and methods like 'present()' don't appear to work correctly).
         # So until GTK on OSX is fixed let's work around this issue...
         import platform
-        if platform.system() == 'Darwin':
+
+        if platform.system() == "Darwin":
             try:
                 import subprocess
-                subprocess.Popen('osascript -e "tell application \\"Python\\" to activate"', shell=True)
+
+                subprocess.Popen(
+                    'osascript -e "tell application \\"Python\\" to activate"',
+                    shell=True,
+                )
             except:
                 pass
-
 
     def hide(self):
         window = self.get_widget(self.gtkbuilder_id)
         if window:
-            window.set_property('visible', False)
+            window.set_property("visible", False)
 
     def show(self):
         window = self.get_widget(self.gtkbuilder_id)
         if window:
-            window.set_property('visible', True)
+            window.set_property("visible", True)
 
     def destroy(self):
         self.close()
@@ -183,28 +196,34 @@ class InterfaceView(GtkBuilderWidgetWrapper):
         return True
 
     def on_key_pressed(self, widget, event, *args):
-        if event.keyval == Gdk.keyval_from_name('Escape'):
+        if event.keyval == Gdk.keyval_from_name("Escape"):
             self.on_cancel_clicked(widget)
             return True
 
-        if (event.state & Gdk.ModifierType.CONTROL_MASK and
-                Gdk.keyval_name(event.keyval).lower() == "w"):
+        if (
+            event.state & Gdk.ModifierType.CONTROL_MASK
+            and Gdk.keyval_name(event.keyval).lower() == "w"
+        ):
             self.on_cancel_clicked(widget)
             return True
 
-        if (event.state & Gdk.ModifierType.CONTROL_MASK and
-                Gdk.keyval_name(event.keyval).lower() == "q"):
+        if (
+            event.state & Gdk.ModifierType.CONTROL_MASK
+            and Gdk.keyval_name(event.keyval).lower() == "q"
+        ):
             self.on_cancel_clicked(widget)
             return True
 
-        if (event.state & Gdk.ModifierType.CONTROL_MASK and
-                Gdk.keyval_name(event.keyval).lower() == "r"):
+        if (
+            event.state & Gdk.ModifierType.CONTROL_MASK
+            and Gdk.keyval_name(event.keyval).lower() == "r"
+        ):
             self.on_refresh_clicked(widget)
             return True
 
-    def change_button(self, id, label = None, icon = None):
+    def change_button(self, id, label=None, icon=None):
         """
-         Replace label and/or icon of the named button.
+        Replace label and/or icon of the named button.
         """
 
         button = self.get_widget(id)
@@ -213,6 +232,7 @@ class InterfaceView(GtkBuilderWidgetWrapper):
         if icon:
             image = Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.BUTTON)
             button.set_image(image)
+
 
 class InterfaceNonView(object):
     """
@@ -225,16 +245,22 @@ class InterfaceNonView(object):
         self.do_gtk_quit = False
 
     def close(self):
-        try:
-            Gtk.main_quit()
-        except RuntimeError:
-            raise SystemExit()
+        if self.do_gtk_quit:
+            if not Gtk.main_level():
+                GLib.idle_add(Gtk.main_quit)
+                self.do_gtk_quit = False
+            else:
+                try:
+                    Gtk.main_quit()
+                except RuntimeError:
+                    raise SystemExit()
 
     def register_gtk_quit(self):
         self.do_gtk_quit = True
 
     def gtk_quit_is_set(self):
         return self.do_gtk_quit
+
 
 class VCSNotSupportedError(Exception):
     """Indicates the desired VCS is not valid for a given action"""

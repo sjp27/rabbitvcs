@@ -1,4 +1,16 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+from rabbitvcs.vcs.status import Status
+from rabbitvcs.util.log import Log
+from rabbitvcs.util.strings import S
+import rabbitvcs.vcs
+import rabbitvcs.ui.action
+import rabbitvcs.ui.dialog
+import rabbitvcs.ui.widget
+from rabbitvcs.util.contextmenu import GtkFilesContextMenu, GtkContextMenuCaller
+from rabbitvcs.ui import InterfaceView
+from gi.repository import Gtk, GObject, Gdk
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -28,34 +40,23 @@ from time import sleep
 from rabbitvcs.util import helper
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk
 sa.restore()
 
-from rabbitvcs.ui import InterfaceView
-from rabbitvcs.util.contextmenu import GtkFilesContextMenu, GtkContextMenuCaller
-import rabbitvcs.ui.widget
-import rabbitvcs.ui.dialog
-import rabbitvcs.ui.action
-import rabbitvcs.vcs
-from rabbitvcs.util.strings import S
-from rabbitvcs.util.log import Log
-from rabbitvcs.vcs.status import Status
 
 log = Log("rabbitvcs.ui.revert")
 
-from rabbitvcs import gettext
 _ = gettext.gettext
 
 helper.gobject_threads_init()
 
-import rabbitvcs.vcs
 
 log = Log("rabbitvcs.ui.revert")
 
-from rabbitvcs import gettext
 _ = gettext.gettext
+
 
 class Revert(InterfaceView, GtkContextMenuCaller):
 
@@ -73,21 +74,24 @@ class Revert(InterfaceView, GtkContextMenuCaller):
         self.statuses = self.vcs.statuses_for_revert(paths)
         self.files_table = rabbitvcs.ui.widget.Table(
             self.get_widget("files_table"),
-            [GObject.TYPE_BOOLEAN, rabbitvcs.ui.widget.TYPE_HIDDEN_OBJECT,
-                rabbitvcs.ui.widget.TYPE_PATH, GObject.TYPE_STRING],
+            [
+                GObject.TYPE_BOOLEAN,
+                rabbitvcs.ui.widget.TYPE_HIDDEN_OBJECT,
+                rabbitvcs.ui.widget.TYPE_PATH,
+                GObject.TYPE_STRING,
+            ],
             [rabbitvcs.ui.widget.TOGGLE_BUTTON, "", _("Path"), _("Extension")],
-            filters=[{
-                "callback": rabbitvcs.ui.widget.path_filter,
-                "user_data": {
-                    "base_dir": base_dir,
-                    "column": 2
+            filters=[
+                {
+                    "callback": rabbitvcs.ui.widget.path_filter,
+                    "user_data": {"base_dir": base_dir, "column": 2},
                 }
-            }],
+            ],
             callbacks={
-                "row-activated":  self.on_files_table_row_activated,
-                "mouse-event":   self.on_files_table_mouse_event,
-                "key-event":     self.on_files_table_key_event
-            }
+                "row-activated": self.on_files_table_row_activated,
+                "mouse-event": self.on_files_table_mouse_event,
+                "key-event": self.on_files_table_key_event,
+            },
         )
 
         self.initialize_items()
@@ -105,12 +109,9 @@ class Revert(InterfaceView, GtkContextMenuCaller):
     def populate_files_table(self):
         self.files_table.clear()
         for item in self.items:
-            self.files_table.append([
-                True,
-                S(item.path),
-                item.path,
-                helper.get_file_extension(item.path)
-            ])
+            self.files_table.append(
+                [True, S(item.path), item.path, helper.get_file_extension(item.path)]
+            )
 
     # Overrides the GtkContextMenuCaller method
     def on_context_menu_command_finished(self):
@@ -162,8 +163,7 @@ class SVNRevert(Revert):
         self.hide()
 
         self.action = rabbitvcs.ui.action.SVNAction(
-            self.vcs.svn(),
-            register_gtk_quit=self.gtk_quit_is_set()
+            self.vcs.svn(), register_gtk_quit=self.gtk_quit_is_set()
         )
 
         self.action.append(self.action.set_header, _("Revert"))
@@ -180,6 +180,13 @@ class GitRevert(Revert):
 
         self.git = self.vcs.git(self.paths[0])
 
+    def on_files_table_row_activated(self, treeview, event, col):
+        paths = self.files_table.get_selected_row_items(1)
+        pathrev1 = helper.create_path_revision_string(paths[0], "base")
+        pathrev2 = helper.create_path_revision_string(paths[0], "working")
+        proc = helper.launch_ui_window("diff", ["-s", pathrev1, pathrev2])
+        self.rescan_after_process_exit(proc, paths)
+
     def on_ok_clicked(self, widget):
         items = self.files_table.get_activated_rows(1)
         if not items:
@@ -188,8 +195,7 @@ class GitRevert(Revert):
         self.hide()
 
         self.action = rabbitvcs.ui.action.GitAction(
-            self.git,
-            register_gtk_quit=self.gtk_quit_is_set()
+            self.git, register_gtk_quit=self.gtk_quit_is_set()
         )
 
         self.action.append(self.action.set_header, _("Revert"))
@@ -199,38 +205,33 @@ class GitRevert(Revert):
         self.action.append(self.action.finish)
         self.action.schedule()
 
+
 class SVNRevertQuiet(object):
     def __init__(self, paths, base_dir=None):
         self.vcs = rabbitvcs.vcs.VCS()
-        self.action = rabbitvcs.ui.action.SVNAction(
-            self.vcs.svn(),
-            run_in_thread=False
-        )
+        self.action = rabbitvcs.ui.action.SVNAction(self.vcs.svn(), run_in_thread=False)
 
         self.action.append(self.vcs.svn().revert, paths)
         self.action.schedule()
+
 
 class GitRevertQuiet(object):
     def __init__(self, paths, base_dir=None):
         self.vcs = rabbitvcs.vcs.VCS()
         self.git = self.vcs.git(paths[0])
-        self.action = rabbitvcs.ui.action.GitAction(
-            self.git,
-            run_in_thread=False
-        )
+        self.action = rabbitvcs.ui.action.GitAction(self.git, run_in_thread=False)
 
         self.action.append(self.git.checkout, paths)
         self.action.schedule()
 
-classes_map = {
-    rabbitvcs.vcs.VCS_SVN: SVNRevert,
-    rabbitvcs.vcs.VCS_GIT: GitRevert
-}
+
+classes_map = {rabbitvcs.vcs.VCS_SVN: SVNRevert, rabbitvcs.vcs.VCS_GIT: GitRevert}
 
 quiet_classes_map = {
     rabbitvcs.vcs.VCS_SVN: SVNRevertQuiet,
-    rabbitvcs.vcs.VCS_GIT: GitRevertQuiet
+    rabbitvcs.vcs.VCS_GIT: GitRevertQuiet,
 }
+
 
 def revert_factory(classes_map, paths, base_dir=None):
     guess = rabbitvcs.vcs.guess(paths[0])
@@ -239,9 +240,9 @@ def revert_factory(classes_map, paths, base_dir=None):
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main, BASEDIR_OPT, QUIET_OPT
+
     (options, paths) = main(
-        [BASEDIR_OPT, QUIET_OPT],
-        usage="Usage: rabbitvcs revert [path1] [path2] ..."
+        [BASEDIR_OPT, QUIET_OPT], usage="Usage: rabbitvcs revert [path1] [path2] ..."
     )
 
     if options.quiet:

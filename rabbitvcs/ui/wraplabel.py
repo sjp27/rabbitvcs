@@ -1,4 +1,7 @@
 from __future__ import absolute_import
+from rabbitvcs.util.strings import S
+from gi.repository import Gtk, GObject, Pango
+
 # This file was originally obtained from:
 # http://git.gnome.org/cgit/meld/tree/meld/ui/wraplabel.py
 # ...and added here by Jason
@@ -25,13 +28,12 @@ from __future__ import absolute_import
 
 # Python translation from wrapLabel.{cc|h} by Gian Mario Tagliaretti
 import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GObject, Pango
 
-from rabbitvcs.util.strings import S
+gi.require_version("Gtk", "3.0")
+
 
 class WrapLabel(Gtk.Label):
-    __gtype_name__ = 'WrapLabel'
+    __gtype_name__ = "WrapLabel"
 
     def __init__(self, str=None):
         Gtk.Label.__init__(self)

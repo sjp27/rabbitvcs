@@ -4,7 +4,7 @@ RabbitVCS
 RabbitVCS is a set of graphical tools written to provide simple and 
 straightforward access to the version control systems you use. We currently
 support Subversion and Git on a variety of clients such as Nautilus, Thunar,
-Nemo, Caja, and on the command line.
+Nemo, Caja, PCManFM-Qt and on the command line.
 
 
 System Requirements
@@ -20,10 +20,10 @@ For subversion:
 For git:
 * dulwich >= 0.19.0
 * git
-* tkinter (for now)
+* tkinter (for now, newer versions of ubuntu this is called python-tk)
 
 For spell checking of commit messages (optional):
-* python-gtkspell
+* python-gtkspell (newer versions of ubuntu, this is called python-gtkspellcheck)
 * hunspell langpacks
 
 For syntax highlighting (optional):
@@ -35,7 +35,7 @@ Recommends:
 
 For Debian-based distros you can run: 
 ```
-# apt-get install python-gtk3 python-configobj python-gobject python-gtkspell python-svn subversion python-dulwich python-pygments git meld tkinter
+# apt-get install python3-configobj python3-gtkspellcheck python3-svn subversion python3-dulwich python3-pygments git meld python3-tk
 ```
 
 For Fedora-based distros you can run:
@@ -77,6 +77,7 @@ its own README. Here is a list of our currently working clients:
  * [Thunar](https://github.com/rabbitvcs/rabbitvcs/tree/master/clients/thunar)
  * [Nemo](https://github.com/rabbitvcs/rabbitvcs/tree/master/clients/nemo)
  * [Caja](https://github.com/rabbitvcs/rabbitvcs/tree/master/clients/caja)
+ * [PCManFM-Qt](https://github.com/rabbitvcs/rabbitvcs/tree/master/clients/pcmanfm-qt)
  * [Command Line](https://github.com/rabbitvcs/rabbitvcs/tree/master/clients/cli)
 
 We have some others as well that are either incomplete, experimental

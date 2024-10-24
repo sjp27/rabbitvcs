@@ -1,4 +1,17 @@
 from __future__ import absolute_import
+from rabbitvcs import gettext
+import rabbitvcs.vcs.status
+from rabbitvcs.util.decorators import gtk_unsafe
+from rabbitvcs.util.log import Log
+from rabbitvcs.util.strings import S
+import rabbitvcs.util
+import rabbitvcs.ui.dialog
+import rabbitvcs.ui.widget
+import rabbitvcs.ui.action
+from rabbitvcs.util.contextmenu import GtkFilesContextMenu, GtkContextMenuCaller
+from rabbitvcs.ui import InterfaceView
+from gi.repository import Gtk, GObject, Gdk, GLib
+
 #
 # This is an extension to the Nautilus file manager to allow better
 # integration with the Subversion source control system.
@@ -28,28 +41,18 @@ from time import sleep
 from rabbitvcs.util import helper
 
 from gi import require_version
+
 require_version("Gtk", "3.0")
 sa = helper.SanitizeArgv()
-from gi.repository import Gtk, GObject, Gdk, GLib
 sa.restore()
 
-from rabbitvcs.ui import InterfaceView
-from rabbitvcs.util.contextmenu import GtkFilesContextMenu, GtkContextMenuCaller
-import rabbitvcs.ui.action
-import rabbitvcs.ui.widget
-import rabbitvcs.ui.dialog
-import rabbitvcs.util
-from rabbitvcs.util.strings import S
-from rabbitvcs.util.log import Log
-from rabbitvcs.util.decorators import gtk_unsafe
-import rabbitvcs.vcs.status
 
 log = Log("rabbitvcs.ui.commit")
 
-from rabbitvcs import gettext
 _ = gettext.gettext
 
 helper.gobject_threads_init()
+
 
 class Commit(InterfaceView, GtkContextMenuCaller):
     """
@@ -57,6 +60,7 @@ class Commit(InterfaceView, GtkContextMenuCaller):
     changes to a repository.  Pass it a list of local paths to commit.
 
     """
+
     SETTINGS = rabbitvcs.util.settings.SettingsManager()
 
     TOGGLE_ALL = False
@@ -81,38 +85,41 @@ class Commit(InterfaceView, GtkContextMenuCaller):
 
         self.files_table = rabbitvcs.ui.widget.Table(
             self.get_widget("files_table"),
-            [GObject.TYPE_BOOLEAN, rabbitvcs.ui.widget.TYPE_HIDDEN_OBJECT,
+            [
+                GObject.TYPE_BOOLEAN,
+                rabbitvcs.ui.widget.TYPE_HIDDEN_OBJECT,
                 rabbitvcs.ui.widget.TYPE_PATH,
-                GObject.TYPE_STRING, rabbitvcs.ui.widget.TYPE_STATUS,
-                GObject.TYPE_STRING],
-            [rabbitvcs.ui.widget.TOGGLE_BUTTON, "", _("Path"), _("Extension"),
-                _("Text Status"), _("Property Status")],
-            filters=[{
-                "callback": rabbitvcs.ui.widget.path_filter,
-                "user_data": {
-                    "base_dir": base_dir,
-                    "column": 2
+                GObject.TYPE_STRING,
+                rabbitvcs.ui.widget.TYPE_STATUS,
+                GObject.TYPE_STRING,
+            ],
+            [
+                rabbitvcs.ui.widget.TOGGLE_BUTTON,
+                "",
+                _("Path"),
+                _("Extension"),
+                _("Text Status"),
+                _("Property Status"),
+            ],
+            filters=[
+                {
+                    "callback": rabbitvcs.ui.widget.path_filter,
+                    "user_data": {"base_dir": base_dir, "column": 2},
                 }
-            }],
+            ],
             callbacks={
-                "row-activated":  self.on_files_table_row_activated,
-                "mouse-event":   self.on_files_table_mouse_event,
-                "key-event":     self.on_files_table_key_event,
-                "row-toggled":   self.on_files_table_toggle_event
+                "row-activated": self.on_files_table_row_activated,
+                "mouse-event": self.on_files_table_mouse_event,
+                "key-event": self.on_files_table_key_event,
+                "row-toggled": self.on_files_table_toggle_event,
             },
-            flags={
-                "sortable": True,
-                "sort_on": 2
-            }
+            flags={"sortable": True, "sort_on": 2},
         )
         self.files_table.allow_multiple()
         self.get_widget("toggle_show_unversioned").set_active(self.SHOW_UNVERSIONED)
         if not message:
             message = self.SETTINGS.get_multiline("general", "default_commit_message")
-        self.message = rabbitvcs.ui.widget.TextView(
-            self.get_widget("message"),
-            message
-        )
+        self.message = rabbitvcs.ui.widget.TextView(self.get_widget("message"), message)
 
         self.paths = []
         for path in paths:
@@ -125,15 +132,17 @@ class Commit(InterfaceView, GtkContextMenuCaller):
 
     def load(self):
         """
-          - Gets a listing of file items that are valid for the commit window.
-          - Determines which items should be "activated" by default
-          - Populates the files table with the retrieved items
-          - Updates the status area
+        - Gets a listing of file items that are valid for the commit window.
+        - Determines which items should be "activated" by default
+        - Populates the files table with the retrieved items
+        - Updates the status area
         """
 
         self.get_widget("status").set_text(_("Loading..."))
 
-        self.items = self.vcs.get_items(self.paths, self.vcs.statuses_for_commit(self.paths))
+        self.items = self.vcs.get_items(
+            self.paths, self.vcs.statuses_for_commit(self.paths)
+        )
 
         self.populate_files_table()
 
@@ -146,9 +155,11 @@ class Commit(InterfaceView, GtkContextMenuCaller):
         Determines if a file should be activated or not
         """
 
-        if (S(item.path) in self.paths
-                or item.is_versioned()
-                and item.simple_content_status() != rabbitvcs.vcs.status.status_missing):
+        if (
+            S(item.path) in self.paths
+            or item.is_versioned()
+            and item.simple_content_status() != rabbitvcs.vcs.status.status_missing
+        ):
             return True
 
         return False
@@ -158,7 +169,7 @@ class Commit(InterfaceView, GtkContextMenuCaller):
 
         if not show_unversioned:
             if not item.is_versioned():
-               return False
+                return False
 
         return True
 
@@ -189,8 +200,10 @@ class Commit(InterfaceView, GtkContextMenuCaller):
         if InterfaceView.on_key_pressed(self, widget, event, *args):
             return True
 
-        if (event.state & Gdk.ModifierType.CONTROL_MASK and
-                Gdk.keyval_name(event.keyval) == "Return"):
+        if (
+            event.state & Gdk.ModifierType.CONTROL_MASK
+            and Gdk.keyval_name(event.keyval) == "Return"
+        ):
             self.on_ok_clicked(widget)
             return True
 
@@ -206,10 +219,12 @@ class Commit(InterfaceView, GtkContextMenuCaller):
         self.populate_files_table()
 
         # Save this preference for future commits.
-        if self.SETTINGS.get("general", "show_unversioned_files") != self.SHOW_UNVERSIONED:
+        if (
+            self.SETTINGS.get("general", "show_unversioned_files")
+            != self.SHOW_UNVERSIONED
+        ):
             self.SETTINGS.set(
-                "general", "show_unversioned_files",
-                self.SHOW_UNVERSIONED
+                "general", "show_unversioned_files", self.SHOW_UNVERSIONED
             )
             self.SETTINGS.write()
 
@@ -258,19 +273,21 @@ class Commit(InterfaceView, GtkContextMenuCaller):
             if not self.should_item_be_visible(item):
                 continue
 
-            self.files_table.append([
-                checked,
-                S(item.path),
-                item.path,
-                helper.get_file_extension(item.path),
-                item.simple_content_status(),
-                item.simple_metadata_status()
-            ])
-        self.get_widget("status").set_text(_("Found %(changed)d changed and %(unversioned)d unversioned item(s)") % {
-                "changed": n,
-                "unversioned": m
-            }
+            self.files_table.append(
+                [
+                    checked,
+                    S(item.path),
+                    item.path,
+                    helper.get_file_extension(item.path),
+                    item.simple_content_status(),
+                    item.simple_metadata_status(),
+                ]
+            )
+        self.get_widget("status").set_text(
+            _("Found %(changed)d changed and %(unversioned)d unversioned item(s)")
+            % {"changed": n, "unversioned": m}
         )
+
 
 class SVNCommit(Commit):
     def __init__(self, paths, base_dir=None, message=None):
@@ -310,32 +327,33 @@ class SVNCommit(Commit):
             except Exception as e:
                 log.exception(e)
 
-        ticks = added + len(items)*2
+        ticks = added + len(items) * 2
 
         self.action = rabbitvcs.ui.action.SVNAction(
-            self.vcs.svn(),
-            register_gtk_quit=self.gtk_quit_is_set()
+            self.vcs.svn(), register_gtk_quit=self.gtk_quit_is_set()
         )
         self.action.set_pbar_ticks(ticks)
         self.action.append(self.action.set_header, _("Commit"))
         self.action.append(self.action.set_status, _("Running Commit Command..."))
-        self.action.append(
-            helper.save_log_message,
-            self.message.get_text()
-        ),
+        self.action.append(helper.save_log_message, self.message.get_text()),
         self.action.append(self.do_commit, items, recurse)
         self.action.append(self.action.finish)
         self.action.schedule()
 
     def do_commit(self, items, recurse):
         # pysvn.Revision
-        revision = self.vcs.svn().commit(items, self.message.get_text(), recurse=recurse)
+        revision = self.vcs.svn().commit(
+            items, self.message.get_text(), recurse=recurse
+        )
 
-        self.action.set_status(_("Completed Commit") + " at Revision: " + str(revision.number))
+        self.action.set_status(
+            _("Completed Commit") + " at Revision: " + str(revision.number)
+        )
 
     def on_files_table_toggle_event(self, row, col):
         # Adds path: True/False to the dict
         self.changes[row[1]] = row[col]
+
 
 class GitCommit(Commit):
     def __init__(self, paths, base_dir=None, message=None):
@@ -347,9 +365,7 @@ class GitCommit(Commit):
 
         active_branch = self.git.get_active_branch()
         if active_branch:
-            self.get_widget("to").set_text(
-                S(active_branch.name).display()
-            )
+            self.get_widget("to").set_text(S(active_branch.name).display())
         else:
             self.get_widget("to").set_text("No active branch")
 
@@ -378,23 +394,16 @@ class GitCommit(Commit):
             except Exception as e:
                 log.exception(e)
 
-        ticks = staged + len(items)*2
+        ticks = staged + len(items) * 2
 
         self.action = rabbitvcs.ui.action.GitAction(
-            self.git,
-            register_gtk_quit=self.gtk_quit_is_set()
+            self.git, register_gtk_quit=self.gtk_quit_is_set()
         )
         self.action.set_pbar_ticks(ticks)
         self.action.append(self.action.set_header, _("Commit"))
         self.action.append(self.action.set_status, _("Running Commit Command..."))
-        self.action.append(
-            helper.save_log_message,
-            self.message.get_text()
-        )
-        self.action.append(
-            self.git.commit,
-            self.message.get_text()
-        )
+        self.action.append(helper.save_log_message, self.message.get_text())
+        self.action.append(self.git.commit, self.message.get_text())
         self.action.append(self.action.set_status, _("Completed Commit"))
         self.action.append(self.action.finish)
         self.action.schedule()
@@ -403,10 +412,9 @@ class GitCommit(Commit):
         # Adds path: True/False to the dict
         self.changes[row[1]] = row[col]
 
-classes_map = {
-    rabbitvcs.vcs.VCS_SVN: SVNCommit,
-    rabbitvcs.vcs.VCS_GIT: GitCommit
-}
+
+classes_map = {rabbitvcs.vcs.VCS_SVN: SVNCommit, rabbitvcs.vcs.VCS_GIT: GitCommit}
+
 
 def commit_factory(paths, base_dir=None, message=None):
     guess = rabbitvcs.vcs.guess(paths[0])
@@ -415,9 +423,10 @@ def commit_factory(paths, base_dir=None, message=None):
 
 if __name__ == "__main__":
     from rabbitvcs.ui import main, BASEDIR_OPT
+
     (options, paths) = main(
-        [BASEDIR_OPT, (["-m", "--message"], {"help":"add a commit log message"})],
-        usage="Usage: rabbitvcs commit [path1] [path2] ..."
+        [BASEDIR_OPT, (["-m", "--message"], {"help": "add a commit log message"})],
+        usage="Usage: rabbitvcs commit [path1] [path2] ...",
     )
 
     window = commit_factory(paths, options.base_dir, message=options.message)
